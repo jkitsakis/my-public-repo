@@ -1,8 +1,0 @@
-torch
-torchaudio
-torchlibrosa
-pyannote.audio
-numpy
-ffmpeg-python
-whisper-timestamped
-
