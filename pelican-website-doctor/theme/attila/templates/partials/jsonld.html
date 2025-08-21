@@ -1,0 +1,25 @@
+{# <!-- Choosing cover image --> #}
+{% if HEADER_COVER %}
+  {% set selected_cover = SITEURL+"/"+HEADER_COVER %}
+{% else %}
+  {% set selected_cover = SITEURL+"/"+THEME_STATIC_DIR+"/images/home-bg.jpg" %}
+{% endif %}
+
+{% set selected_cover = HOME_COVER_URL_OG %}
+
+{# <!-- Choosing description --> #}
+{% if SITESUBTITLE %}
+    {% set description = SITESUBTITLE %}
+{% else %}
+    {% set description = 'View the blog.' %}
+{% endif %}
+<script type="application/ld+json">
+{
+  "@context" : "http://schema.org",
+  "@type" : "Website",
+  "name": " {{ SITENAME }} ",
+  "url" : "{{ SITEURL_OG }}/",
+  "image": "{{ selected_cover }}",
+  "description": "{{ description }}"
+}
+</script>

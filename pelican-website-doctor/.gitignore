@@ -1,0 +1,8 @@
+__pycache__/*
+plugins/__pycache__/*
+.idea/
+output/
+source/
+.venv/
+
+

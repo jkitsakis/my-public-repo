@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+{% block head %}
+    {{ super() }}
+    <meta name="twitter:creator" content="{{ TWITTER_USERNAME }}">
+    <meta name="twitter:url" content="{{ SITEURL }}">
+    <meta name="twitter:title" content="{{ SITENAME }}">
+    <meta name="twitter:description" content="{{ SIDEBAR_DIGEST }}">
+
+    <!-- Facebook Meta Data -->
+    <meta property="og:title" content="{{ SITENAME }}"/>
+    <meta property="og:description" content="{{ SIDEBAR_DIGEST }}"/>
+    <meta property="og:image" content=""/>
+{% endblock head %}
+{% block content_title %}{% endblock %}
+{% block content %}
+
+    <div class="blog-card">
+        <ul>
+            <li>
+                <input id="rad1" type="radio" name="rad" checked="checked"/>
+                <label for="rad1">
+                    <img src="{{SITEURL}}/images/services/eopyy.png" style="transform: rotate(0deg);">
+                    <div >{{SERVICE_EOPYY}}</div>
+                </label>
+                <div class="accslide">
+                    <div class="container">
+                      <div class="img"><img src="{{SITEURL}}/images/services/eopyy.png"></div>
+                      <div class="two"><h1><a href="{{SITEURL}}/pages/services/eopyy.html">{{SERVICE_EOPYY}}</a> </h1></div>
+                      <div class="three">
+                          <ul>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Συνταγογράφηση</li>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Παραπεμπτικά</li>
+                          </ul>
+                      </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <input id="rad2" type="radio" name="rad"/>
+                <label for="rad2">
+                    <img src="{{SITEURL}}/images/services/preventive-medicine.png" style="transform: rotate(0deg);">
+                    <div> {{SERVICE_PREVENTIVE_MEDICINE}}</div>
+                </label>
+                <div class="accslide">
+                    <div class="container">
+                      <div class="img"><img src="{{SITEURL}}/images//services/preventive-medicine.png"></div>
+                      <div class="two"><h1><a href="{{SITEURL}}/pages/services/preventive-medicine.html">{{SERVICE_PREVENTIVE_MEDICINE}}</a></h1></div>
+                      <div class="three">
+                          <ul>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Ρύθμιση Αρτηριακής Πίεσης</li>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Διαβήτης</li>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Εµβολιασµοί</li>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Συµβουλευτική</li>
+                          </ul>
+                      </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <input id="rad3" type="radio" name="rad"/>
+                <label for="rad3">
+                    <img src="{{SITEURL}}/images/services/chronic-diseases.png" style="transform: rotate(0deg);">
+                    <div>{{SERVICE_CHRONIC_DISEASE}}</div>
+                </label>
+                <div class="accslide">
+                    <div class="container">
+                      <div class="img"><img src="{{SITEURL}}/images//services/chronic-diseases.png"></div>
+                      <div class="two"><h1><a href="{{SITEURL}}/pages/services/chronic-diseases.html">{{SERVICE_CHRONIC_DISEASE}}</a></h1></div>
+                      <div class="three">
+                          <ul>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Κατ' οίκον επισκεψεις</li>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Περιποίηση Τραυμάτων</li>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Διερεύνηση παθολογικών τιμών εργαστηριακών εξετάσεων</li>
+                          </ul>
+                      </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <input id="rad4" type="radio" name="rad"/>
+                <label for="rad4">
+                    <img src="{{SITEURL}}/images/services/assistance.png" style="transform: rotate(0deg);">
+                    <div>{{SERVICE_ASSISTANCE}}</div>
+                </label>
+                <div class="accslide">
+                    <div class="container">
+                      <div class="img"><img src="{{SITEURL}}/images//services/assistance.png"></div>
+                      <div class="two">
+                            <h1>
+                                <a href="{{SITEURL}}/pages/services/assistance.html">{{SERVICE_ASSISTANCE}}</a>
+                            </h1>
+                      </div>
+                      <div class="three">
+                          <ul>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Eπίσκεψη στην οικία του ασθενούς</li>
+                          </ul>
+                      </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <input id="rad5" type="radio" name="rad"/>
+                <label for="rad5">
+                    <img src="{{SITEURL}}/images/services/emergency.png" style="transform: rotate(0deg);">
+                    <div>{{SERVICE_EMERGENCY}}</div>
+                </label>
+                <div class="accslide">
+                    <div class="container">
+                      <div class="img"><img src="{{SITEURL}}/images//services/emergency.png"></div>
+                      <div class="two"><h1><a href="{{SITEURL}}/pages/services/emergency.html">{{SERVICE_EMERGENCY}}</a></h1></div>
+                      <div class="three">
+                          <ul>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Αρτηριακή Υπέρταση</li>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Διαβήτης</li>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> ΧΑΠ</li>
+                          </ul>
+                      </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <input id="rad6" type="radio" name="rad"/>
+                <label for="rad6">
+                    <img src="{{SITEURL}}/images/services/medical-certificates.png" style="transform: rotate(0deg);">
+                    <div>{{SERVICE_CERTIFICATES}}</div>
+                </label>
+                <div class="accslide">
+                    <div class="container">
+                      <div class="img"><img src="{{SITEURL}}/images//services/medical-certificates.png"></div>
+                      <div class="two"><h1><a href="{{SITEURL}}/pages/services/certificates.html">{{SERVICE_CERTIFICATES}}</a></h1></div>
+                      <div class="three">
+                          <ul>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Διπλωμάτων Οδηγησης</li>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Υγείας Εργαζομένων</li>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Αθλητικά</li>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Σχολικά</li>
+                          </ul>
+                      </div>
+                    </div>
+                </div>
+            </li>
+            <li>
+                <input id="rad7" type="radio" name="rad"/>
+                <label for="rad7">
+                    <img src="{{SITEURL}}/images/services/botox.png" style="transform: rotate(0deg);">
+                    <div>{{SERVICE_BOTOX}}</div>
+                </label>
+                <div class="accslide">
+                    <div class="container">
+                      <div class="img"><img src="{{SITEURL}}/images//services/botox.png"></div>
+                      <div class="two"><h1><a href="{{SITEURL}}/pages/services/botox.html">{{SERVICE_BOTOX}}</a></h1></div>
+                      <div class="three">
+                          <ul>
+                            <li> <img style="width:25px; height:auto; " src="{{SITEURL}}/images/bullet.png"/> Botox</li>
+                          </ul>
+                      </div>
+                    </div>
+                </div>
+            </li>
+        </ul>
+    </div>
+
+    <div style="position:relative; height:50px;"></div>
+
+    <div class="relative wrapper">
+        <div class="bottom-div1">
+            <h4>{{OPERATION_HOURS}}</h4>
+            <ul class="time-sidual">
+                <li class="li">{{OPERATION_DAYS_GROUP_1}}: <span>{{OPERATION_HOURS_GROUP_1}}</span></li>
+                <li class="li">{{OPERATION_DAYS_GROUP_2}}: <span>{{OPERATION_HOURS_GROUP_2}}</span></li>
+            </ul>
+        </div>
+
+        <div class="bottom-div3">
+            <h4>{{EMERGENCY_CASES}}</h4>
+            <ul class="time-sidual">
+                <li class="li">{{MOBILE}}</li>
+                <li class="li">{{EMAIL}}</li>
+            </ul>
+        </div>
+
+         <div style="text-align: center" class="bottom-div2">
+            <h4><a href="{{SITEURL}}/pages/Contact.html">{{RANDEVOUZ}}</a></h4>
+        </div>
+
+
+    </div>
+{% endblock content %}

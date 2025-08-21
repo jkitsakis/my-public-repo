@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block title %}{{ page.title }}{% endblock %}
+{% block content %}
+
+
+<article>
+
+    {% if  page.slug  in ('CV') %}
+        {% include 'cv.html' %}
+    {% endif %}
+
+    {% if  page.slug  in ('Services') %}
+        {% include 'services.html' %}
+    {% endif %}
+
+    {% if  page.slug  in ('Contact') %}
+        {% include 'contact.html' %}
+    {% endif %}
+
+</article>
+
+{% endblock %}
