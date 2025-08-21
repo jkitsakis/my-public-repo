@@ -1,0 +1,12 @@
+services:
+  rstudio:
+    build: .
+    container_name: rstudio_server
+    ports:
+      - "8787:8787"
+    environment:
+      PASSWORD: rstudio # Set your password
+      USER: rstudio     # Username for RStudio
+    volumes:
+      - ./data:/home/rstudio:rw  # Mount data directory for persistence
+    privileged: true 

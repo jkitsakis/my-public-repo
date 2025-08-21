@@ -1,0 +1,20 @@
+version: "3.9"
+
+services:
+  retroarch:
+    build: .
+    container_name: retroarch
+    environment:
+      - DISPLAY=${DISPLAY}
+      - PUID=1000
+      - PGID=1000
+      - TZ=Europe/Athens
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix   # Real X11 socket
+      - ./roms/arcade:/roms                   # Your games
+    devices:
+      - /dev/dri:/dev/dri              # GPU
+      - /dev/input                     # Gamepad
+    network_mode: host
+    command: flatpak run --filesystem=/roms:ro org.libretro.RetroArch
+    restart: unless-stopped

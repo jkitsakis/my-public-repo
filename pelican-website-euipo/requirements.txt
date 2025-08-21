@@ -1,0 +1,9 @@
+Markdown
+pelican
+pip
+pipreqs
+tinycss2
+Jinja2
+rcssmin
+rjsmin
+beautifulsoup4

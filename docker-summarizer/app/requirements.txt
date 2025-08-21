@@ -1,0 +1,5 @@
+torch
+transformers
+python-docx
+PyPDF2
+markdown
