@@ -7,21 +7,21 @@
       <creator>ERT 1</creator>
       <album>TV</album>
       <image>https://files2.app.ertflix.gr/files/channels/ert1-logo-800x300-f.png?m=resize&amp;w=240&amp;h=136</image>
-      <location>https://ertflix.akamaized.net/ertlive/ert1/clrdef24723b/index.mpd</location>
+      <location>https://ertflix.akamaized.net/ertlive/ert1/clrdef24723b/index.m3u8</location>
     </track>
     <track>
       <title>ERT2</title>
       <creator>ERT 2</creator>
       <album>TV</album>
       <image>https://files2.app.ertflix.gr/files/channels/ert2-logo-800x300-f.png?m=resize&amp;w=240&amp;h=136</image>
-      <location>https://ertflix.akamaized.net/ertlive/ert2/clrdef24828z/index.mpd</location>
+      <location>https://ertflix-greece.siliconweb.com/mpegts/618618_2341557/master_mpegts.m3u8</location>
     </track>
     <track>
       <title>ERT3</title>
       <creator>ERT 3</creator>
       <album>TV</album>
       <image>https://files2.app.ertflix.gr/files/channels/ert3-logo-800x300-f.png?m=resize&amp;w=240&amp;h=136</image>
-      <location>https://ertflix.akamaized.net/ertlive/ert3/clrdef24828n/index.mpd</location>
+      <location>https://ertflix-greece.siliconweb.com/cmaf/618618_2341560/index.mpd</location>
     </track>
     <track>
       <title>ANT1</title>
@@ -69,8 +69,8 @@
       <title>Netmax</title>
       <creator>Netmax</creator>
       <album>TV</album>
-      <image>https://scontent.fath7-1.fna.fbcdn.net/v/t39.30808-1/309028630_206337638401098_9155535995443088632_n.jpg?stp=dst-jpg_s200x200_tt6&amp;_nc_cat=107&amp;ccb=1-7&amp;_nc_sid=2d3e12&amp;_nc_ohc=Zqp4hJQDTRkQ7kNvwGyfBnc&amp;_nc_oc=AdmKOLw0V3o8FzIztxJLMgG6y54v-W6yIVMlsAd0FMjdiTq3W57hxgBiroFg9xR9HQQ&amp;_nc_zt=24&amp;_nc_ht=scontent.fath7-1.fna&amp;_nc_gid=QeXb1Cg994jjp8gLw4a7mQ&amp;oh=00_AfRGnSE1kFhpR_tpYqRUYAQ2DolIqrHsJmvdJSAqDyRkEg&amp;oe=68800DF2</image>
-      <location>https://live.netmaxtv.com:1936/live/live/chunklist_w556311684.m3u8</location>
+      <image>https://netmaxtv.com/wp-content/uploads/2024/01/netmax2024latest.png</image>
+      <location>https://s1.crystalweb.net:1936/netmaxtv/netmaxtv/playlist.m3u8</location>
     </track>
     <track>
       <title>Extacy TV</title>
@@ -105,7 +105,7 @@
       <creator>ERT NEWS</creator>
       <album>TV</album>
       <image>https://files2.app.ertflix.gr/files/channels/ert-news-logo-800x300.png?m=resize&amp;w=240&amp;h=136</image>
-      <location>https://ertflix.akamaized.net/ertlive/ertnews/default/index.mpd</location>
+      <location>https://ertflix.akamaized.net/ertlive/ertnews/hls8test/index.m3u8</location>
     </track>
     <track>
       <title>VouliTV</title>
