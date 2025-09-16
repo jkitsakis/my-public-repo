@@ -1,13 +1,13 @@
 #EXTM3U
 
 #EXTINF:-1 group-title="TV" TVG-ID="ERT1" tvg-name="ERT 1" tvg-logo="https://files2.app.ertflix.gr/files/channels/ert1-logo-800x300-f.png?m=resize&w=240&h=136",ERT1
-https://ertflix.akamaized.net/ertlive/ert1/clrdef24723b/index.mpd
+https://ertflix.akamaized.net/ertlive/ert1/clrdef24723b/index.m3u8
 
 #EXTINF:-1 group-title="TV" TVG-ID="ERT2" tvg-name="ERT 2" tvg-logo="https://files2.app.ertflix.gr/files/channels/ert2-logo-800x300-f.png?m=resize&w=240&h=136",ERT2
-https://ertflix.akamaized.net/ertlive/ert2/clrdef24828z/index.mpd
+https://ertflix-greece.siliconweb.com/mpegts/618618_2341557/master_mpegts.m3u8
 
 #EXTINF:-1 group-title="TV" TVG-ID="ERT3" tvg-name="ERT 3" tvg-logo="https://files2.app.ertflix.gr/files/channels/ert3-logo-800x300-f.png?m=resize&w=240&h=136",ERT3
-https://ertflix.akamaized.net/ertlive/ert3/clrdef24828n/index.mpd
+https://ertflix-greece.siliconweb.com/cmaf/618618_2341560/index.mpd
 
 #EXTINF:-1 group-title="TV" TVG-ID="ANT1" tvg-name="ANT1" tvg-logo="https://upload.wikimedia.org/wikipedia/el/a/ac/Ant1.png",ANT1
 #KODIPROP:inputstream=inputstream.adaptive
@@ -29,8 +29,8 @@ https://liveopen.siliconweb.com/openTvLive/liveopen/playlist.m3u8
 #EXTINF:-1 group-title="TV" TVG-ID="ACTION24" tvg-name="ACTION24" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Action24-logo-small.png/250px-Action24-logo-small.png",ACTION24
 https://actionlive.siliconweb.com/actionabr/actiontv/playlist.m3u8
 
-#EXTINF:-1 group-title="TV" TVG-ID="Netmax" tvg-name="Netmax" tvg-logo="https://scontent.fath7-1.fna.fbcdn.net/v/t39.30808-1/309028630_206337638401098_9155535995443088632_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=107&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=Zqp4hJQDTRkQ7kNvwGyfBnc&_nc_oc=AdmKOLw0V3o8FzIztxJLMgG6y54v-W6yIVMlsAd0FMjdiTq3W57hxgBiroFg9xR9HQQ&_nc_zt=24&_nc_ht=scontent.fath7-1.fna&_nc_gid=QeXb1Cg994jjp8gLw4a7mQ&oh=00_AfRGnSE1kFhpR_tpYqRUYAQ2DolIqrHsJmvdJSAqDyRkEg&oe=68800DF2",Netmax
-https://live.netmaxtv.com:1936/live/live/chunklist_w556311684.m3u8
+#EXTINF:-1 group-title="TV" TVG-ID="Netmax" tvg-name="Netmax" tvg-logo="https://netmaxtv.com/wp-content/uploads/2024/01/netmax2024latest.png",Netmax
+https://s1.crystalweb.net:1936/netmaxtv/netmaxtv/playlist.m3u8
 
 #EXTINF:-1 group-title="TV" TVG-ID="ExtacyTV" tvg-name="ExtacyTV" tvg-logo="https://extacytv.gr/wp-content/uploads/2025/04/extacy-cinema-dark-696x392.png",Extacy TV
 https://eu1.servers10.com:8081/8380/index.m3u8
@@ -45,7 +45,7 @@ https://eu1.servers10.com:8081/8382/index.m3u8
 https://web.onair-radio.eu/groovytv/groovytv/playlist.m3u8
 
 #EXTINF:-1 group-title="TV" tvg-name="ERT NEWS" tvg-logo="https://files2.app.ertflix.gr/files/channels/ert-news-logo-800x300.png?m=resize&w=240&h=136",ERT NEWS
-https://ertflix.akamaized.net/ertlive/ertnews/default/index.mpd
+https://ertflix.akamaized.net/ertlive/ertnews/hls8test/index.m3u8
 
 #EXTINF:-1 group-title="TV" TVG-ID="VouliTV" tvg-name="VouliTV" tvg-logo="https://upload.wikimedia.org/wikipedia/el/thumb/0/03/VOYLHTV-LOGO_2020.png/800px-VOYLHTV-LOGO_2020.png",VouliTV
 https://streamer-cache.grnet.gr/parliament/hls/webtv_640_640x360/index.m3u8
