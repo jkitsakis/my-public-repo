@@ -7,6 +7,9 @@ pause() {
   read -rp "Press Enter to continue..."
 }
 
+eval "$(pyenv init -)"
+
+
 # Main menu loop
 while true; do
   clear
