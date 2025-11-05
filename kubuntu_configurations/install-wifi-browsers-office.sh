@@ -168,3 +168,36 @@ sudo apt install -y libreoffice libreoffice-gtk3 libreoffice-style-breeze
 echo "🎉 LibreOffice installation complete!"
 echo "It will now auto-update via 'apt update && apt upgrade'."
 
+
+# --- Kodi with flatpak ---
+sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+flatpak remotes
+
+sudo apt install flatpak -y
+flatpak install flathub tv.kodi.Kodi -y
+
+# --- VLC installation (from official VideoLAN PPA) ---
+echo "🎥 Installing VLC media player (latest version from VideoLAN PPA)..."
+
+# Remove any existing older VLC
+sudo apt remove --purge -y vlc* || true
+sudo apt autoremove -y
+
+# Ensure repo tools exist
+sudo apt install -y software-properties-common apt-transport-https ca-certificates
+
+# Add the official VLC PPA if not already added
+if ! grep -q "videolan" /etc/apt/sources.list.d/* 2>/dev/null; then
+    sudo add-apt-repository -y ppa:videolan/master-daily
+    echo "✅ VLC PPA added."
+else
+    echo "ℹ️ VLC PPA already exists, skipping."
+fi
+
+# Install VLC and recommended codecs
+sudo apt update -qq
+sudo apt install -y vlc vlc-plugin-access-extra vlc-plugin-base vlc-plugin-video-output vlc-plugin-qt
+
+echo "🎉 VLC installation complete!"
+echo "VLC will now update automatically with apt upgrade."
+
