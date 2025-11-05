@@ -1,0 +1,121 @@
+ 
+Excellent 👍 — here’s your **complete SDKMAN! command reference**, showing how to use it like `pyenv` for **Java, Maven, Gradle, Kotlin, Spring Boot**, etc.
+
+SDKMAN! works entirely from your terminal — no sudo required — and manages all versions under `~/.sdkman`.
+
+---
+
+## ☕ **SDKMAN! Quick Overview**
+
+* Manages SDKs (Software Development Kits): JDKs, Maven, Gradle, Kotlin, etc.
+* Each SDK (and version) installs into `~/.sdkman/candidates/`
+* Switching versions updates `$PATH` and `$JAVA_HOME` automatically
+* Configuration stored in: `~/.sdkman/etc/config`
+
+---
+
+## 🧭 **Basic Commands**
+
+| Command          | Description           | Example          |
+| ---------------- | --------------------- | ---------------- |
+| `sdk version`    | Show SDKMAN! version  | `sdk version`    |
+| `sdk update`     | Update SDKMAN! itself | `sdk update`     |
+| `sdk selfupdate` | Force SDKMAN! update  | `sdk selfupdate` |
+| `sdk help`       | Show help and syntax  | `sdk help`       |
+
+---
+
+## ☕ **Managing Java Versions**
+
+### 🧩 List available JDKs
+
+```bash
+sdk list java
+```
+
+Shows all vendors (Oracle, Temurin, GraalVM, OpenJDK, etc.).
+
+Example output:
+
+```
+================================================================================
+Available Java Versions
+================================================================================
+Vendor        | Use | Version      | Dist    | Identifier
+--------------------------------------------------------------------------------
+              |     | 21.0.1       | Oracle  | 21.0.1-oracle
+              |     | 21.0.2       | Temurin | 21.0.2-tem
+              |     | 17.0.10      | Oracle  | 17.0.10-oracle
+--------------------------------------------------------------------------------
+```
+
+---
+
+### 📦 Install a JDK
+
+```bash
+sdk install java 21.0.1-oracle
+```
+
+It downloads and configures it automatically under:
+
+```
+~/.sdkman/candidates/java/21.0.1-oracle/
+```
+
+---
+
+### 🔄 Use a specific JDK in this shell only
+
+```bash
+sdk use java 21.0.1-oracle
+```
+
+→ Active for current terminal session only.
+
+---
+
+### 🏗 Set a default JDK system-wide (persistent)
+
+```bash
+sdk default java 21.0.1-oracle
+```
+
+→ Automatically active in every terminal session.
+
+---
+
+### 📋 List installed JDKs
+
+```bash
+sdk current java
+sdk list java
+```
+
+---
+
+### ❌ Remove a JDK
+
+```bash
+sdk uninstall java 17.0.10-oracle
+```
+
+---
+
+### 🧠 Show current configuration
+
+```bash
+sdk env
+```
+
+---
+
+## ⚙️ **SDKMAN! Environment Commands**
+
+| Command                          | Purpose                        |
+| -------------------------------- | ------------------------------ |
+| `sdk current`                    | Show all currently active SDKs |
+| `sdk default <tool> <version>`   | Set a permanent default        |
+| `sdk use <tool> <version>`       | Temporarily use a version      |
+| `sdk install <tool> <version>`   | Install any supported tool     |
+| `sdk uninstall <tool> <version>` | Uninstall a version            |

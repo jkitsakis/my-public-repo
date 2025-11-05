@@ -10,6 +10,9 @@ CRED_FILE="${HOME}/.smbcredentials-nas310s"  # file with username= / password=
 PING_TIMEOUT_SECS=300     # 5 minutes
 MOUNT_TIMEOUT_SECS=120    # 2 minutes
 
+sudo apt update -qq
+sudo apt install cifs-utils
+
 echo "[NAS310S] SMB1 mount script started..."
 
 # --- Preflight checks ---

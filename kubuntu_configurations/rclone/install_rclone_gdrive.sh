@@ -48,7 +48,7 @@ ExecStart=/usr/bin/rclone mount \\
   --config=/home/%u/.config/rclone/rclone.conf \\
   --vfs-cache-mode writes \\
   --allow-other \\
-  mygdrive: /home/%u/GDrive
+  GDrive: /home/%u/GDrive
 ExecStop=/bin/fusermount3 -u /home/%u/GDrive
 Restart=on-failure
 Environment=XDG_RUNTIME_DIR=/run/user/%U
