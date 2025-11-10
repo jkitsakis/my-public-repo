@@ -79,3 +79,12 @@ sudo apt install -y vlc
 echo "🎉 VLC installation complete!"
 echo "VLC will now update automatically with apt upgrade."
 
+# --- Viber ---
+
+#  Add the Flathub repository (if not already)
+sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+sudo flatpak install -y flathub com.viber.Viber
+
+echo "🎉 Viber installation complete!"
+echo "Viber will now update automatically with apt upgrade."
+
