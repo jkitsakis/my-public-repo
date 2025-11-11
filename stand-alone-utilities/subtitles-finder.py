@@ -40,22 +40,17 @@ def choose_method():
 # ====== Method 1: Subliminal (.org XML-RPC) ======
 def download_with_subliminal(video_path):
     print(f"[Subliminal / OpenSubtitles.org] Downloading Greek subtitles for {video_path.name}...")
-
-
     guess = guessit(video_path.name)
     print("🔍 Parsed metadata:", guess)
-
     try:
         if guess.get("type") == "episode":
             if 'episode' not in guess:
                 print("⚠️ Cannot fetch subtitles: no episode number in filename.")
-                return
             video = Episode.fromguess(video_path.name, guess)
         elif guess.get("type") == "movie":
             video = Movie.fromguess(video_path.name, guess)
         else:
             print("❌ Could not determine if the video is a movie or episode.")
-            return
 
         subtitles = download_best_subtitles(
             [video],
@@ -92,6 +87,7 @@ def download_with_subliminal(video_path):
 
     except ValueError as ve:
         print(f"❌ Subliminal error: {ve}")
+        return False
 
 
 
@@ -159,14 +155,14 @@ def download_opensubtitles(token, file_id, output_path):
     print(f"✅ Greek subtitle saved to {output_path.name} using OpenSubtitles.com API.")
 
 def download_with_opensubtitles_api(video_path, language):
-    print(f"[OpenSubtitles.com API v1] Downloading Greek subtitles for {video_path.name}...")
+    print(f"[OpenSubtitles.com API v1] Downloading subtitles for {video_path.name}_{language}...")
     try:
         token = get_opensubtitles_token()
         results = search_opensubtitles(token, video_path.stem, language)
 
         if not results:
             print(f"No subtitles found on OpenSubtitles.com for {language}")
-            return
+            return False
 
         best_file = results[0]['attributes']['files'][0]
         if language == 'el':
@@ -179,6 +175,7 @@ def download_with_opensubtitles_api(video_path, language):
 
     except requests.HTTPError as e:
         print(f"OpenSubtitles.com API error: {e}")
+        return False
 
 
 def convert_subtitle_to_utf8(subtitle_path):
