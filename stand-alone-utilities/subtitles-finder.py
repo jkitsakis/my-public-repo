@@ -135,8 +135,9 @@ def generate_possible_queries(stem):
     queries.add(condensed)
 
     # Try to extract the series title, year, season, and episode
-    se_match = re.search(r'(.+?)[\s\-_.]*S(\d{2})E(\d{2})', stem, re.IGNORECASE)
+    se_match = re.search(r'(.+?)[\s\-_.]*S(\d{2})[\s\-_.]*E(\d{2})', stem, re.IGNORECASE)
     year_match = re.search(r'\(?(\d{4})\)?', stem)
+
     if se_match:
         title = se_match.group(1).replace('-', ' ').replace('_', ' ').strip()
         season = se_match.group(2)
