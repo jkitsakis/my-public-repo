@@ -134,9 +134,16 @@ def generate_possible_queries(stem):
     condensed = re.sub(r'[\W_]+', '', stem.lower())
     queries.add(condensed)
 
+    # Match examples :
+    # Ghosts (2019) - S03E01 - The Bone Plot (1080p AMZN WEB-DL x265 Ghost)
+    # Ghosts-S03E01-The Bone Plot (1080p AMZN WEB-DL x265 Ghost)
+    # Ghosts_S03_E01-The Bone Plot
+    # Ghosts-S03-E01-The Bone Plot
+
     # Try to extract the series title, year, season, and episode
     se_match = re.search(r'(.+?)[\s\-_.]*S(\d{2})[\s\-_.]*E(\d{2})', stem, re.IGNORECASE)
-    year_match = re.search(r'\(?(\d{4})\)?', stem)
+    # Optionally match a leading or trailing separator around year (space, dot, dash, underscore, or paren)
+    year_match = re.search(r'[\(\s\-_.]?(\d{4})[\)\s\-_.]?', stem)
 
     if se_match:
         title = se_match.group(1).replace('-', ' ').replace('_', ' ').strip()
