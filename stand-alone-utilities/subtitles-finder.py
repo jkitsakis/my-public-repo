@@ -1,5 +1,6 @@
 import os
 
+import re
 import chardet
 import requests
 import tkinter as tk
@@ -125,6 +126,28 @@ def search_opensubtitles(token, query, language):
         response.raise_for_status()
     return response.json()['data']
 
+
+def generate_possible_queries(stem):
+    queries = set()
+    queries.add(stem)
+    # Try to extract show title, year, season and episode
+    match = re.match(r"(.+?)\s*\((\d{4})\).*?S(\d{2})E(\d{2})", stem, re.IGNORECASE)
+    if match:
+        title, year, season, episode = match.groups()
+        se_code = f"S{season}E{episode}"
+        queries.add(f"{title.strip()} {year} {se_code}")
+        queries.add(f"{title.strip()} {year}")
+        queries.add(f"{title.strip()} {se_code}")
+        queries.add(title.strip())
+    else:
+        # fallback: title up to first " - ", just in case
+        title = stem.split(' - ')[0].strip()
+        queries.add(title)
+        # Also try compressed form (ghosts2019s03e01)
+    compressed = re.sub(r'[^A-Za-z0-9]', '', stem.lower())
+    queries.add(compressed)
+    return list(queries)
+
 def download_opensubtitles(token, file_id, output_path):
     url = "https://api.opensubtitles.com/api/v1/download"
     headers = {
@@ -154,24 +177,26 @@ def download_opensubtitles(token, file_id, output_path):
 
     print(f"✅ Greek subtitle saved to {output_path.name} using OpenSubtitles.com API.")
 
+
 def download_with_opensubtitles_api(video_path, language):
     print(f"[OpenSubtitles.com API v1] Downloading subtitles for {video_path.name}_{language}...")
     try:
         token = get_opensubtitles_token()
-        results = search_opensubtitles(token, video_path.stem, language)
 
-        if not results:
-            print(f"No subtitles found on OpenSubtitles.com for {language}")
-            return False
-
-        best_file = results[0]['attributes']['files'][0]
-        if language == 'el':
-            output_path = video_path.with_suffix('.srt')
-        else:
-            output_path = video_path.with_name(f"{video_path.stem}.{language}.srt")
-
-        download_opensubtitles(token, best_file['file_id'], output_path)
-        return True
+        queries = generate_possible_queries(video_path.stem)
+        for query in queries:
+            print(f"🔍 Trying query: '{query}'")
+            results = search_opensubtitles(token, query, language)
+            if results:
+                best_file = results[0]['attributes']['files'][0]
+                if language == 'el':
+                    output_path = video_path.with_suffix('.srt')
+                else:
+                    output_path = video_path.with_name(f"{video_path.stem}.{language}.srt")
+                download_opensubtitles(token, best_file['file_id'], output_path)
+                return True
+        print(f"No subtitles found on OpenSubtitles.com for {language}")
+        return False
 
     except requests.HTTPError as e:
         print(f"OpenSubtitles.com API error: {e}")
