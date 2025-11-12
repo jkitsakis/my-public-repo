@@ -9,6 +9,7 @@ from pathlib import Path
 from subliminal import download_best_subtitles, save_subtitles, region
 from babelfish import Language
 from guessit import guessit
+from subliminal.providers.opensubtitlescom import opensubtitlescom_languages
 from subliminal.video import Episode, Movie
 
 # ====== OpenSubtitles.com API CONFIG ======
@@ -67,6 +68,7 @@ def download_with_subliminal(video_path):
             subtitle_found = False
             subtitle_dir = video_path.parent
             for sub_file in subtitle_dir.glob(f"{video_path.stem}.el*.srt"):
+                print(f"📥 Original subtitle file name: {sub_file.name}")
                 suffix = f"{video_path.stem}.el.{count}.srt"
                 final_sub_path = subtitle_dir / suffix
                 os.rename(sub_file, final_sub_path)
@@ -191,7 +193,7 @@ def generate_guessit_query(video_path):
     return query.strip()
 
 
-def download_subtitle_combined(video_path, language):
+def opensubtitles(video_path, language):
     print(f"[Combined] Downloading subtitles for {video_path.name}_{language}...")
 
     # 1. Try guessit-based query with the API
@@ -207,6 +209,10 @@ def download_subtitle_combined(video_path, language):
             downloaded = False
             for result in results:
                 for file in result['attributes']['files']:
+                    # Print the original subtitle file name if available
+                    file_name = file.get('file_name') or file.get('filename', '[unknown]')
+                    print(f"🌐 Original subtitle file name: {file_name}")
+
                     output_path = video_path.with_name(f"{video_path.stem}.{language}.{count}.srt")
                     download_opensubtitles(token, file['file_id'], output_path)
                     count += 1
@@ -230,6 +236,10 @@ def download_subtitle_combined(video_path, language):
                 downloaded = False
                 for result in results:
                     for file in result['attributes']['files']:
+                        # Print the original subtitle file name if available
+                        file_name = file.get('file_name') or file.get('filename', '[unknown]')
+                        print(f"🌐 Original subtitle file name: {file_name}")
+
                         output_path = video_path.with_name(f"{video_path.stem}.{language}.{count}.srt")
                         download_opensubtitles(token, file['file_id'], output_path)
                         count += 1
@@ -240,7 +250,9 @@ def download_subtitle_combined(video_path, language):
     except Exception as e:
         print(f"Regex API search failed: {e}")
 
-        # 3. As a last resort, try Subliminal (legacy)
+
+
+def subliminal(video_path) -> bool:
     try:
         return download_with_subliminal(video_path)
     except Exception as e:
@@ -248,6 +260,7 @@ def download_subtitle_combined(video_path, language):
 
     print(f"No subtitles found for {video_path.name}")
     return False
+
 
 def download_opensubtitles(token, file_id, output_path):
     url = "https://api.opensubtitles.com/api/v1/download"
@@ -319,8 +332,12 @@ def main():
     for video_path in video_files:
         print(f"\n🎬 Processing: {video_path.name}")
         os.chdir(video_path.parent)
-        if not download_subtitle_combined(video_path, 'el'):
-            download_subtitle_combined(video_path, 'en')
+        opensubtitlesFound=opensubtitles(video_path, 'el')
+        subliminalFound=subliminal(video_path)
+
+        if not (opensubtitlesFound and subliminalFound(video_path)):
+          opensubtitles(video_path, 'en')
+
 
 if __name__ == "__main__":
     main()
