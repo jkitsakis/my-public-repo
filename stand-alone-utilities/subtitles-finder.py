@@ -63,16 +63,22 @@ def download_with_subliminal(video_path):
 
             # Force UTF-8 conversion
             # Find .el.srt and rename it to match the video filename
-            original_sub_path = video_path.with_name(video_path.stem + '.el.srt')
-            final_sub_path = video_path.with_suffix('.srt')
-
-            if original_sub_path.exists():
-                os.rename(original_sub_path, final_sub_path)
-                print(f"📝 Renamed subtitle to match video: {final_sub_path.name}")
+            count = 1
+            subtitle_found = False
+            subtitle_dir = video_path.parent
+            for sub_file in subtitle_dir.glob(f"{video_path.stem}.el*.srt"):
+                suffix = f"{video_path.stem}.el.{count}.srt"
+                final_sub_path = subtitle_dir / suffix
+                os.rename(sub_file, final_sub_path)
+                print(f"📝 Renamed subtitle to: {final_sub_path.name}")
                 convert_subtitle_to_utf8(final_sub_path)
+                subtitle_found = True
+                count += 1
+
+            if subtitle_found:
                 return True
             else:
-                print("⚠️ Expected .el.srt file not found. Subtitle may not have been saved.")
+                print("⚠️ No Greek subtitle files found after download.")
                 return False
 
         else:
@@ -197,11 +203,16 @@ def download_subtitle_combined(video_path, language):
         print(f"🔍 Trying guessit query: '{guessit_query}'")
         results = search_opensubtitles(token, guessit_query, language)
         if results:
-            best_file = results[0]['attributes']['files'][0]
-            output_path = video_path.with_suffix('.srt') if language == 'el' else video_path.with_name(
-                f"{video_path.stem}.{language}.srt")
-            download_opensubtitles(token, best_file['file_id'], output_path)
-            return True
+            count = 1
+            downloaded = False
+            for result in results:
+                for file in result['attributes']['files']:
+                    output_path = video_path.with_name(f"{video_path.stem}.{language}.{count}.srt")
+                    download_opensubtitles(token, file['file_id'], output_path)
+                    count += 1
+                    downloaded = True
+            if downloaded:
+                return True
     except Exception as e:
         print(f"Guessit API search failed: {e}")
 
@@ -209,16 +220,23 @@ def download_subtitle_combined(video_path, language):
     try:
         if not token:
             token = get_opensubtitles_token()
+
         queries = generate_possible_queries(video_path.stem)
         for query in queries:
             print(f"🔍 Trying regex query: '{query}'")
             results = search_opensubtitles(token, query, language)
             if results:
-                best_file = results[0]['attributes']['files'][0]
-                output_path = video_path.with_suffix('.srt') if language == 'el' else video_path.with_name(
-                    f"{video_path.stem}.{language}.srt")
-                download_opensubtitles(token, best_file['file_id'], output_path)
-                return True
+                count = 1
+                downloaded = False
+                for result in results:
+                    for file in result['attributes']['files']:
+                        output_path = video_path.with_name(f"{video_path.stem}.{language}.{count}.srt")
+                        download_opensubtitles(token, file['file_id'], output_path)
+                        count += 1
+                        downloaded = True
+                if downloaded:
+                    return True
+
     except Exception as e:
         print(f"Regex API search failed: {e}")
 
