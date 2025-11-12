@@ -34,7 +34,6 @@ def select_video_folder():
 
 # ====== Method 1: Subliminal (.org XML-RPC) ======
 def download_with_subliminal(video_path):
-    print(f"[Subliminal / OpenSubtitles.org] Downloading Greek subtitles for {video_path.name}...")
     guess = guessit(video_path.name)
     print("🔍 Parsed metadata:", guess)
     try:
@@ -67,9 +66,9 @@ def download_with_subliminal(video_path):
             count = 1
             subtitle_found = False
             subtitle_dir = video_path.parent
-            for sub_file in subtitle_dir.glob(f"{video_path.stem}.el*.srt"):
+            for sub_file in subtitle_dir.glob(f"{video_path.stem}.el.srt"):
                 print(f"📥 Original subtitle file name: {sub_file.name}")
-                suffix = f"{video_path.stem}.el.{count}.srt"
+                suffix = f"{video_path.stem}.subliminal.el.{count}.srt"
                 final_sub_path = subtitle_dir / suffix
                 os.rename(sub_file, final_sub_path)
                 print(f"📝 Renamed subtitle to: {final_sub_path.name}")
@@ -194,7 +193,7 @@ def generate_guessit_query(video_path):
 
 
 def opensubtitles(video_path, language):
-    print(f"[Combined] Downloading subtitles for {video_path.name}_{language}...")
+    print(f"\n [Opensubtitles] Downloading Greek subtitles for {video_path.name}_{language}...")
 
     # 1. Try guessit-based query with the API
     token = None
@@ -252,14 +251,9 @@ def opensubtitles(video_path, language):
 
 
 
-def subliminal(video_path) -> bool:
-    try:
-        return download_with_subliminal(video_path)
-    except Exception as e:
-        print(f"Subliminal failed: {e}")
-
-    print(f"No subtitles found for {video_path.name}")
-    return False
+def subliminal(video_path):
+    print(f"\n [Subliminal] Downloading Greek subtitles for {video_path.name}...")
+    return download_with_subliminal(video_path)
 
 
 def download_opensubtitles(token, file_id, output_path):
@@ -332,11 +326,12 @@ def main():
     for video_path in video_files:
         print(f"\n🎬 Processing: {video_path.name}")
         os.chdir(video_path.parent)
-        opensubtitlesFound=opensubtitles(video_path, 'el')
-        subliminalFound=subliminal(video_path)
 
-        if not (opensubtitlesFound and subliminalFound(video_path)):
-          opensubtitles(video_path, 'en')
+        opensubtitlesFound = opensubtitles(video_path, 'el')
+        subliminalFound = subliminal(video_path)
+
+        if not (opensubtitlesFound and subliminalFound):
+            opensubtitles(video_path, 'en')
 
 
 if __name__ == "__main__":
