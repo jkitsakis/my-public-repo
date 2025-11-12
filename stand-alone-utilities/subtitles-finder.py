@@ -35,7 +35,7 @@ def select_video_folder():
 # ====== Method 1: Subliminal (.org XML-RPC) ======
 def download_with_subliminal(video_path):
     guess = guessit(video_path.name)
-    print("🔍 Parsed metadata:", guess)
+    # print("🔍 Parsed metadata:", guess)
     try:
         if guess.get("type") == "episode":
             if 'episode' not in guess:
@@ -59,7 +59,7 @@ def download_with_subliminal(video_path):
             # Log which provider was used
             for subtitle in subtitle_list:
                 provider = getattr(subtitle, 'provider_name', 'unknown')
-                print(f"✅ Subtitle provided by: {provider}  | Language: {subtitle.language}")
+                print(f"🔍 Subtitle provided by: {provider}  | Language: {subtitle.language}")
 
             # Force UTF-8 conversion
             # Find .el.srt and rename it to match the video filename
@@ -67,11 +67,11 @@ def download_with_subliminal(video_path):
             subtitle_found = False
             subtitle_dir = video_path.parent
             for sub_file in subtitle_dir.glob(f"{video_path.stem}.el.srt"):
-                print(f"📥 Original subtitle file name: {sub_file.name}")
+                print(f"🌐 Original subtitle file name: {sub_file.name}")
                 suffix = f"{video_path.stem}.subliminal.el.{count}.srt"
                 final_sub_path = subtitle_dir / suffix
                 os.rename(sub_file, final_sub_path)
-                print(f"📝 Renamed subtitle to: {final_sub_path.name}")
+                print(f"✅ Greek subtitle saved to: {final_sub_path.name} \n")
                 convert_subtitle_to_utf8(final_sub_path)
                 subtitle_found = True
                 count += 1
@@ -283,7 +283,7 @@ def download_opensubtitles(token, file_id, output_path):
     with open(output_path, 'w', encoding='utf-8') as f:
         f.write(text)
 
-    print(f"✅ Greek subtitle saved to {output_path.name} using OpenSubtitles.com API.")
+    print(f"✅ Greek subtitle saved to {output_path.name} using OpenSubtitles.com API.\n")
 
 
 def convert_subtitle_to_utf8(subtitle_path):
@@ -300,7 +300,7 @@ def convert_subtitle_to_utf8(subtitle_path):
         with open(subtitle_path, 'w', encoding='utf-8') as f:
             f.write(text)
 
-        print(f"📝 Converted subtitle to UTF-8: {subtitle_path.name}")
+        # print(f"📝 Converted subtitle to UTF-8: {subtitle_path.name}")
 
     except Exception as e:
         print(f"⚠️ Could not convert {subtitle_path.name} to UTF-8: {e}")
