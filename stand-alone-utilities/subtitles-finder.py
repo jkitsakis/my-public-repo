@@ -130,22 +130,41 @@ def search_opensubtitles(token, query, language):
 def generate_possible_queries(stem):
     queries = set()
     queries.add(stem)
-    # Try to extract show title, year, season and episode
-    match = re.match(r"(.+?)\s*\((\d{4})\).*?S(\d{2})E(\d{2})", stem, re.IGNORECASE)
-    if match:
-        title, year, season, episode = match.groups()
+    # Normalize the stem
+    condensed = re.sub(r'[\W_]+', '', stem.lower())
+    queries.add(condensed)
+
+    # Try to extract the series title, year, season, and episode
+    se_match = re.search(r'(.+?)[\s\-_.]*S(\d{2})E(\d{2})', stem, re.IGNORECASE)
+    year_match = re.search(r'\(?(\d{4})\)?', stem)
+    if se_match:
+        title = se_match.group(1).replace('-', ' ').replace('_', ' ').strip()
+        season = se_match.group(2)
+        episode = se_match.group(3)
         se_code = f"S{season}E{episode}"
-        queries.add(f"{title.strip()} {year} {se_code}")
-        queries.add(f"{title.strip()} {year}")
-        queries.add(f"{title.strip()} {se_code}")
-        queries.add(title.strip())
-    else:
-        # fallback: title up to first " - ", just in case
-        title = stem.split(' - ')[0].strip()
+        queries.add(f"{title} {se_code}")
+        queries.add(f"{title}{se_code}")
         queries.add(title)
-        # Also try compressed form (ghosts2019s03e01)
-    compressed = re.sub(r'[^A-Za-z0-9]', '', stem.lower())
-    queries.add(compressed)
+        if year_match:
+            year = year_match.group(1)
+            queries.add(f"{title} {year} {se_code}")
+            queries.add(f"{title} {year}")
+            queries.add(f"{title}{year}{se_code}")
+    else:
+        # fallback: everything before first dash
+        base = stem.split('-')[0].split('(')[0].strip()
+        if base:
+            queries.add(base)
+        if year_match:
+            title = stem.split('(')[0].strip()
+            year = year_match.group(1)
+            queries.add(f"{title} {year}")
+
+            # Add compressed (no spaces/punctuation) for all
+    for q in list(queries):
+        compressed = re.sub(r'[^A-Za-z0-9]', '', q.lower())
+        queries.add(compressed)
+
     return list(queries)
 
 def download_opensubtitles(token, file_id, output_path):
