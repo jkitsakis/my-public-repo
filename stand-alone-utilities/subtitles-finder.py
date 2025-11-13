@@ -1,23 +1,18 @@
 import os
-
 import re
+
 import chardet
 import requests
 import tkinter as tk
 from tkinter import filedialog, messagebox
 from pathlib import Path
-from subliminal import download_best_subtitles, save_subtitles, region
-from babelfish import Language
 from guessit import guessit
-from subliminal.providers.opensubtitlescom import opensubtitlescom_languages
-from subliminal.video import Episode, Movie
 
 # ====== OpenSubtitles.com API CONFIG ======
 OPENSUBTITLES_API_KEY = 'GrYUKj75bQ3m13hnrGUK3CTvhsiaRsxu'
 OPENSUBTITLES_USERNAME = 'jokit'
 OPENSUBTITLES_PASSWORD = 'opensubtitlesJokit73'
 
-region.configure('dogpile.cache.memory')
 # ====== GUI: Select Video File ======
 def select_video_file():
     tk.Tk().withdraw()
@@ -32,67 +27,7 @@ def select_video_folder():
     folder_path = filedialog.askdirectory(title="Select a folder with video files")
     return Path(folder_path) if folder_path else None
 
-# ====== Method 1: Subliminal (.org XML-RPC) ======
-def download_with_subliminal(video_path):
-    guess = guessit(video_path.name)
-    # print("🔍 Parsed metadata:", guess)
-    try:
-        if guess.get("type") == "episode":
-            if 'episode' not in guess:
-                print("⚠️ Cannot fetch subtitles: no episode number in filename.")
-            video = Episode.fromguess(video_path.name, guess)
-        elif guess.get("type") == "movie":
-            video = Movie.fromguess(video_path.name, guess)
-        else:
-            print("❌ Could not determine if the video is a movie or episode.")
 
-        subtitles = download_best_subtitles(
-            [video],
-            {Language('ell')},
-            providers=['opensubtitles', 'addic7ed', 'podnapisi', 'tvsubtitles']
-        )
-
-        if subtitles.get(video):
-            subtitle_list = subtitles[video]
-            save_subtitles(video, subtitle_list)
-
-            # Log which provider was used
-            for subtitle in subtitle_list:
-                provider = getattr(subtitle, 'provider_name', 'unknown')
-                print(f"🔍 Subtitle provided by: {provider}  | Language: {subtitle.language}")
-
-            # Force UTF-8 conversion
-            # Find .el.srt and rename it to match the video filename
-            count = 1
-            subtitle_found = False
-            subtitle_dir = video_path.parent
-            for sub_file in subtitle_dir.glob(f"{video_path.stem}.el.srt"):
-                print(f"🌐 Original subtitle file name: {sub_file.name}")
-                suffix = f"{video_path.stem}.subliminal.el.{count}.srt"
-                final_sub_path = subtitle_dir / suffix
-                os.rename(sub_file, final_sub_path)
-                print(f"✅ Greek subtitle saved to: {final_sub_path.name} \n")
-                convert_subtitle_to_utf8(final_sub_path)
-                subtitle_found = True
-                count += 1
-
-            if subtitle_found:
-                return True
-            else:
-                print("⚠️ No Greek subtitle files found after download.")
-                return False
-
-        else:
-            print("No Greek subtitle found via any provider.")
-            return False
-
-    except ValueError as ve:
-        print(f"❌ Subliminal error: {ve}")
-        return False
-
-
-
-# ====== Method 2: OpenSubtitles.com REST API v1 ======
 def get_opensubtitles_token():
     url = "https://api.opensubtitles.com/api/v1/login"
     headers = {
@@ -127,80 +62,50 @@ def search_opensubtitles(token, query, language):
     return response.json()['data']
 
 
-def generate_possible_queries(stem):
-    queries = set()
-    queries.add(stem)
-    # Normalize the stem
-    condensed = re.sub(r'[\W_]+', '', stem.lower())
-    queries.add(condensed)
-
-    # Match examples :
-    # Ghosts (2019) - S03E01 - The Bone Plot (1080p AMZN WEB-DL x265 Ghost)
-    # Ghosts-S03E01-The Bone Plot (1080p AMZN WEB-DL x265 Ghost)
-    # Ghosts_S03_E01-The Bone Plot
-    # Ghosts-S03-E01-The Bone Plot
-
-    # Try to extract the series title, year, season, and episode
-    se_match = re.search(r'(.+?)[\s\-_.]*S(\d{2})[\s\-_.]*E(\d{2})', stem, re.IGNORECASE)
-    # Optionally match a leading or trailing separator around year (space, dot, dash, underscore, or paren)
-    year_match = re.search(r'[\(\s\-_.]?(\d{4})[\)\s\-_.]?', stem)
-
-    if se_match:
-        title = se_match.group(1).replace('-', ' ').replace('_', ' ').strip()
-        season = se_match.group(2)
-        episode = se_match.group(3)
-        se_code = f"S{season}E{episode}"
-        queries.add(f"{title} {se_code}")
-        queries.add(f"{title}{se_code}")
-        queries.add(title)
-        if year_match:
-            year = year_match.group(1)
-            queries.add(f"{title} {year} {se_code}")
-            queries.add(f"{title} {year}")
-            queries.add(f"{title}{year}{se_code}")
-    else:
-        # fallback: everything before first dash
-        base = stem.split('-')[0].split('(')[0].strip()
-        if base:
-            queries.add(base)
-        if year_match:
-            title = stem.split('(')[0].strip()
-            year = year_match.group(1)
-            queries.add(f"{title} {year}")
-
-            # Add compressed (no spaces/punctuation) for all
-    for q in list(queries):
-        compressed = re.sub(r'[^A-Za-z0-9]', '', q.lower())
-        queries.add(compressed)
-
-    return list(queries)
-
-
 def generate_guessit_query(video_path):
     guess = guessit(video_path.name)
+
+    # --- Clean base title ---
+    title = guess.get('title', '')
+    if not title:
+        # fallback: remove dots, dashes, resolution tags manually
+        clean = video_path.stem
+        for junk in ['1080p', '2160p', '720p', 'x264', 'x265', 'WEBRip', 'WEB-DL',
+                     'BluRay', 'BRRip', 'HDRip', 'YTS', 'RARBG', 'AMZN', 'NF', 'DSNP',
+                     'HMAX', 'DD5', 'ATMOS']:
+            clean = clean.replace(junk, '')
+        title = clean.replace('.', ' ').replace('_', ' ').strip()
+
+    # Normalize variations
+    title = title.replace('.', ' ').replace('_', ' ').strip()
+
+    # --- Build result ---
     if guess.get('type') == 'episode':
-        title = guess.get('title', '').replace('-', ' ').replace('_', ' ').strip()
         season = guess.get('season')
         episode = guess.get('episode')
-        query = f"{title} S{season:02d}E{episode:02d}" if season and episode else title
-    elif guess.get('type') == 'movie':
-        title = guess.get('title', '').replace('-', ' ').replace('_', ' ').strip()
         year = guess.get('year')
-        query = f"{title} {year}" if year else title
-    else:
-        return video_path.stem
-    return query.strip()
+
+        if season and episode:
+            return f"{title} {year} S{season:02d}E{episode:02d}"
+
+        # fallback if season/episode is partially missing
+        return title
+
+    elif guess.get('type') == 'movie':
+        year = guess.get('year')
+        return f"{title} {year}" if year else title
+
+    # Unknown type → fallback
+    return title
+
 
 
 def opensubtitles(video_path, language):
-    print(f"\n [Opensubtitles] Downloading Greek subtitles for {video_path.name}_{language}...")
+    print(f"\n [Opensubtitles] Downloading {language} subtitles for {video_path.name}_{language}...")
 
-    # 1. Try guessit-based query with the API
-    token = None
     try:
-        if not token:
-            token = get_opensubtitles_token()
-        guessit_query = generate_guessit_query(video_path)
+        token = get_opensubtitles_token()
+        guessit_query, title, season, episode = generate_guessit_query(video_path)
         print(f"🔍 Trying guessit query: '{guessit_query}'")
         results = search_opensubtitles(token, guessit_query, language)
         if results:
@@ -210,50 +115,88 @@ def opensubtitles(video_path, language):
                 for file in result['attributes']['files']:
                     # Print the original subtitle file name if available
                     file_name = file.get('file_name') or file.get('filename', '[unknown]')
-                    print(f"🌐 Original subtitle file name: {file_name}")
-
-                    output_path = video_path.with_name(f"{video_path.stem}.{language}.{count}.srt")
-                    download_opensubtitles(token, file['file_id'], output_path)
-                    count += 1
-                    downloaded = True
-            if downloaded:
-                return True
-    except Exception as e:
-        print(f"Guessit API search failed: {e}")
-
-        # 2. Try all regex-based queries with the API
-    try:
-        if not token:
-            token = get_opensubtitles_token()
-
-        queries = generate_possible_queries(video_path.stem)
-        for query in queries:
-            print(f"🔍 Trying regex query: '{query}'")
-            results = search_opensubtitles(token, query, language)
-            if results:
-                count = 1
-                downloaded = False
-                for result in results:
-                    for file in result['attributes']['files']:
-                        # Print the original subtitle file name if available
-                        file_name = file.get('file_name') or file.get('filename', '[unknown]')
-                        print(f"🌐 Original subtitle file name: {file_name}")
+                    if subtitle_matches(title, season, episode, file_name):
+                        print(f"🌐 Original subtitle file name to Download: {file_name}")
 
                         output_path = video_path.with_name(f"{video_path.stem}.{language}.{count}.srt")
                         download_opensubtitles(token, file['file_id'], output_path)
                         count += 1
                         downloaded = True
-                if downloaded:
-                    return True
+                    else:
+                        print(f" Probably irrelevant file : {file_name}")
 
+            if downloaded:
+                return True
     except Exception as e:
-        print(f"Regex API search failed: {e}")
+        print(f"Guessit API search failed: {e}")
+
+import re
+
+def subtitle_matches(title, season, episode, file_name):
+    file_clean = re.sub(r'[^a-zA-Z0-9]+', ' ', file_name.lower())
+
+    # --- 1. Title words check (ignore year if exists) ---
+    title_clean = re.sub(r'[^a-zA-Z0-9]+', ' ', title.lower()).strip()
+    title_words = [w for w in title_clean.split() if not w.isdigit()]
+
+    title_ok = all(word in file_clean for word in title_words)
+
+    # --- 2. Episode check if applicable ---
+    if season and episode:
+        ep_tag_1 = f"s{season:02d}e{episode:02d}".lower()
+        ep_tag_2 = f"{season}x{episode:02d}".lower()
+        ep_ok = ep_tag_1 in file_name.lower() or ep_tag_2 in file_name.lower()
+        return title_ok and ep_ok
+
+    # If movie → title only
+    return title_ok
 
 
+def generate_guessit_query(video_path):
+    guess = guessit(video_path.name)
 
-def subliminal(video_path):
-    print(f"\n [Subliminal] Downloading Greek subtitles for {video_path.name}...")
-    return download_with_subliminal(video_path)
+    # --- Extract base fields ---
+    raw_title = guess.get('title', '')
+    season = guess.get('season')
+    episode = guess.get('episode')
+    year = guess.get('year')
+    gtype = guess.get('type')
+
+    # --- Clean title ---
+    if not raw_title:
+        # fallback simple cleanup
+        clean = video_path.stem
+        for junk in ['1080p', '2160p', '720p', 'x264', 'x265', 'WEBRip', 'WEB-DL',
+                     'BluRay', 'BRRip', 'HDRip', 'YTS', 'RARBG', 'AMZN', 'NF', 'DSNP',
+                     'HMAX', 'DD5', 'ATMOS']:
+            clean = clean.replace(junk, '')
+        raw_title = clean
+
+    # normalize
+    title = raw_title.replace('.', ' ').replace('_', ' ').strip()
+
+    # --- Build query ---
+    if gtype == 'episode':
+        if season and episode:
+            # include year only if available
+            if year:
+                query = f"{title} {year} S{season:02d}E{episode:02d}"
+            else:
+                query = f"{title} S{season:02d}E{episode:02d}"
+        else:
+            query = title
+
+    elif gtype == 'movie':
+        if year:
+            query = f"{title} {year}"
+        else:
+            query = title
+
+    else:
+        query = title
+
+    return query.strip(), title, season, episode
+
 
 
 def download_opensubtitles(token, file_id, output_path):
@@ -328,9 +271,8 @@ def main():
         os.chdir(video_path.parent)
 
         opensubtitlesFound = opensubtitles(video_path, 'el')
-        subliminalFound = subliminal(video_path)
 
-        if not (opensubtitlesFound and subliminalFound):
+        if not (opensubtitlesFound):
             opensubtitles(video_path, 'en')
 
 
