@@ -12,7 +12,7 @@ https://ertflix-greece.siliconweb.com/cmaf/618618_2341560/index.mpd
 #EXTINF:-1 group-title="TV" TVG-ID="ANT1" tvg-name="ANT1" tvg-logo="https://upload.wikimedia.org/wikipedia/el/a/ac/Ant1.png",ANT1
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=hls
-https://mcdn.antennaplus.gr/live/media0/Ant1/HLS/Ant1.m3u8
+https://lcdn.antennaplus.gr/r86d08d448885424196f6cd3ddc5d1489/eu-central-1/6415884360001/playlist.m3u8
 
 #EXTINF:-1 group-title="TV" TVG-ID="ALPHA" tvg-name="ALPHA" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/3/3f/Alpha-TV-Logo.png/250px-Alpha-TV-Logo.png",ALPHA
 https://alphatvlive2.siliconweb.com/alphatvlive/live_abr/playlist.m3u8
@@ -50,5 +50,5 @@ https://eu1.vectromdigital.com:1936/netvtoronto/netvtoronto/playlist.m3u8
 #EXTINF:-1 group-title="TV" TVG-ID="MAKTV" tvg-name="MAKTV" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Makedonia_TV_2023.svg/250px-Makedonia_TV_2023.svg.png",MAKTV
 #KODIPROP:inputstream=inputstream.adaptive
 #KODIPROP:inputstream.adaptive.manifest_type=hls
-#https://mcdn.antennaplus.gr/live/media0/MAK/HLS/MAK.m3u8
+# https://lcdn.antennaplus.gr/r444865966c0847fca53b9b0c133af7a9/eu-central-1/6415884360001/playlist.m3u8
 
