@@ -12,7 +12,7 @@ class EmailSender:
 
         # Email and password for your Yahoo account
         yahoo_email = "j_kitsakis@yahoo.com"
-        yahoo_password = "ezkmbmewffcftkeh"
+        yahoo_password = "njjrdxybvjvpsqnh"
         # Gmail address to send email to
         recipient_email = "jkitsakis@gmail.com"
 
