@@ -1,0 +1,24 @@
+
+# 2025-11-13 09:27:54.122854
++n
+
+# 2025-11-13 09:29:19.540874
++/quit
+
+# 2025-11-13 09:29:37.952121
++n
+
+# 2025-11-13 09:38:38.537924
++/quit
+
+# 2025-11-13 16:48:48.468144
++n
+
+# 2025-11-13 16:49:20.798917
++/add stand-alone-utilities/translate_srt_to_greek.py
+
+# 2025-11-13 16:50:00.525907
++/ask is there a better import apart from GoogleTranslator to use for accurate subtitle translations ?
+
+# 2025-11-13 17:07:22.434777
++/ask is there a model for this job to call it from openroutter ?
