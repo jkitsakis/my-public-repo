@@ -13,7 +13,7 @@ from send_email import EmailSender
 
 THEME= "Digital Content Writer"
 LANGUAGE= "GREEK"
-OPENROUTER_API_KEY = "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"  # put your key here
+OPENROUTER_API_KEY = ""  # put your key here
 OPENROUTER_MODEL = "openai/gpt-4.1"  # or gpt-4o, gpt-4.1-mini, etc.
 
 OPENROUTER_HEADERS = {
