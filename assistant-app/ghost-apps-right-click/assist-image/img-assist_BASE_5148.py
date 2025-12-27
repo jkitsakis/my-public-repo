@@ -13,7 +13,7 @@ from send_email import EmailSender
 
 THEME= "Digital Content Writer"
 LANGUAGE= "GREEK"
-OPENROUTER_API_KEY = ""  # put your key here
+OPENROUTER_API_KEY = "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"  # put your key here
 OPENROUTER_MODEL = "openai/gpt-4.1"  # or gpt-4o, gpt-4.1-mini, etc.
 
 OPENROUTER_HEADERS = {
@@ -31,11 +31,7 @@ prompt = (
     f"It is about online training program in {LANGUAGE}. Answer in {LANGUAGE}.\n"
     f"Do this IN ORDER:\n"
     f"1) Silently reconstruct the clean question and the answer options from the OCR text.\n"
-<<<<<<< HEAD
-    f"2) **READ** the content from these resources and their sublinks/files:\n"
-=======
-    f"2) **READ AND USE** the content from these resources and their sublinks/files:\n"
->>>>>>> bf5fa6c4438603bcb4773f42956dba4a50e607cd
+    f"2) **USE** the content from these resources and their sublinks/files:\n"
     f"    -- https://drive.google.com/file/d/14Rzs_R1zc2sOy4A-4Cha8sVgiOsN4Xr3/view?usp=drive_link\n"
     f"\n"
     f"Output rules (strict):\n"
