@@ -29,26 +29,24 @@ https://liveopen.siliconweb.com/openTvLive/liveopen/playlist.m3u8
 #EXTINF:-1 group-title="TV" TVG-ID="ACTION24" tvg-name="ACTION24" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/8/88/Action24-logo-small.png/250px-Action24-logo-small.png",ACTION24
 https://actionlive.siliconweb.com/actionabr/actiontv/playlist.m3u8
 
+#EXTINF:-1 group-title="TV" TVG-ID="Netmax" tvg-name="Netmax" tvg-logo="https://netmaxtv.com/wp-content/uploads/2025/10/NETMAX-4.png",Netmax
+https://es1.crystalweb.net:1936/netmaxtv/netmaxtv/playlist.m3u8
+
+#EXTINF:-1 group-title="TV" TVG-ID="Groovy" tvg-name="Groovy" tvg-logo="http://blog.lcotiv.com/i/45974462283.png",Groovy
+https://web.onair-radio.eu/groovytv/groovytv/playlist.m3u8
+
 #EXTINF:-1 group-title="TV" tvg-name="ERT NEWS" tvg-logo="https://files2.app.ertflix.gr/files/channels/ert-news-logo-800x300.png?m=resize&w=240&h=136",ERT NEWS
 https://ertflix.ascdn.broadpeak.io/ertlive/ertnews/default/index.m3u8
+
+#EXTINF:-1 group-title="TV" tvg-name="Mega News" tvg-logo="https://i.imgur.com/Z3k7iA0.png" tvg-id="MegaChannel.gr" group-title="Greece",Mega News
+https://c98db5952cb54b358365984178fb898a.msvdn.net/live/S99841657/NU0xOarAMJ5X/playlist.m3u8
 
 #EXTINF:-1 group-title="TV" TVG-ID="VouliTV" tvg-name="VouliTV" tvg-logo="https://www.hellenicparliament.gr/UserFiles/683211ad-ac7d-4669-b8d1-bc1bef970455/bouliTV_1.png",VouliTV
 https://diavlos-cache.cnt.grnet.gr/parltv/webtv-1b.sdp/chunklist.m3u8
 
-#EXTINF:-1 group-title="TV" TVG-ID="Netmax" tvg-name="Netmax" tvg-logo="https://netmaxtv.com/wp-content/uploads/2025/10/NETMAX-4.png",Netmax
-https://es1.crystalweb.net:1936/netmaxtv/netmaxtv/playlist.m3u8
 
-#EXTINF:-1 group-title="TV" TVG-ID="Groovy" tvg-name="Groovy" tvg-logo="https://scontent.fath5-1.fna.fbcdn.net/v/t39.30808-1/293230389_443067984499350_131214590236704870_n.jpg?stp=dst-jpg_s200x200_tt6&_nc_cat=105&ccb=1-7&_nc_sid=2d3e12&_nc_ohc=yAOy0O6ULboQ7kNvwHtyNRb&_nc_oc=AdnUKVO-3TKcr0Z7uogZ7FnKH_AMLegZpL0S3Am3ZoRcwq_ujicZC8khSIgQBOpMPZQ&_nc_zt=24&_nc_ht=scontent.fath5-1.fna&_nc_gid=3mVVBsfXIQ4RwGPNrWPe3A&oh=00_Afg_WL5Z09v9j2F96Ymkx4uPsTQLS2zFqFJO-AmrW_mMrw&oe=691567C4",Groovy
-https://web.onair-radio.eu/groovytv/groovytv/playlist.m3u8
 
-#EXTINF:-1 group-title="TV" TVG-ID="NetvEurope" tvg-name="NetvEurope" tvg-logo="https://goo.gl/ofVjvQ",Netv Europe
-https://eu1.vectromdigital.com:1936/netveurope/netveurope/playlist.m3u8
+#EXTINF:-1 group-title="TV" tvg-name="Makedonia TV" tvg-logo="https://i.imgur.com/6Ir6wcR.png" tvg-id="MakedoniaTV.gr" group-title="Greece",Makedonia TV
+https://lcdn.antennaplus.gr/r444865966c0847fca53b9b0c133af7a9/eu-central-1/6415884360001/playlist.m3u8
 
-#EXTINF:-1 group-title="TV" TVG-ID="NetvToronto" tvg-name="NetvToronto" tvg-logo="https://goo.gl/ofVjvQ",Netv Toronto
-https://eu1.vectromdigital.com:1936/netvtoronto/netvtoronto/playlist.m3u8
-
-#EXTINF:-1 group-title="TV" TVG-ID="MAKTV" tvg-name="MAKTV" tvg-logo="https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Makedonia_TV_2023.svg/250px-Makedonia_TV_2023.svg.png",MAKTV
-#KODIPROP:inputstream=inputstream.adaptive
-#KODIPROP:inputstream.adaptive.manifest_type=hls
-# https://lcdn.antennaplus.gr/r444865966c0847fca53b9b0c133af7a9/eu-central-1/6415884360001/playlist.m3u8
 

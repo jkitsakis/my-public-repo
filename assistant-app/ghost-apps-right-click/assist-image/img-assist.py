@@ -31,7 +31,7 @@ prompt = (
     f"It is about online training program in {LANGUAGE}. Answer in {LANGUAGE}.\n"
     f"Do this IN ORDER:\n"
     f"1) Silently reconstruct the clean question and the answer options from the OCR text.\n"
-    f"2) **USE** the content from these resources and their sublinks/files:\n"
+    f"2) **READ** the content from these resources and their sublinks/files:\n"
     f"    -- https://drive.google.com/file/d/14Rzs_R1zc2sOy4A-4Cha8sVgiOsN4Xr3/view?usp=drive_link\n"
     f"\n"
     f"Output rules (strict):\n"

@@ -2,7 +2,7 @@
 set -euo pipefail
 
 # === Config ===
-NAS_HOST="192.168.1.50"
+NAS_HOST="192.168.8.50"
 SHARE_NAME="Volume1"                         # change if your share name differs
 SHARE="//${NAS_HOST}/${SHARE_NAME}"
 MOUNTPOINT="${HOME}/NAS310S"
