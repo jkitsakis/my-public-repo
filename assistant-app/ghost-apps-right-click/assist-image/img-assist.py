@@ -1,5 +1,6 @@
 import base64
 import io
+from pathlib import Path
 
 import requests
 import sys
@@ -11,10 +12,11 @@ from mss import mss
 from PIL import Image
 from send_email import EmailSender
 
-THEME= "Digital Content Writer"
+THEME= "Aptitude Tests"
 LANGUAGE= "GREEK"
+OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_API_KEY = ""  # put your key here
-OPENROUTER_MODEL = "openai/gpt-4.1"  # or gpt-4o, gpt-4.1-mini, etc.
+OPENROUTER_MODEL = "openai/gpt-4o"  # or gpt-4o, gpt-4.1-mini, etc.
 
 OPENROUTER_HEADERS = {
     "Authorization": f"Bearer {OPENROUTER_API_KEY}",
@@ -22,26 +24,7 @@ OPENROUTER_HEADERS = {
     "HTTP-Referer": "http://localhost",   # required by OpenRouter
     "X-Title": f"{THEME}"
 }
-
-prompt = (
-    f"You are an expert in {THEME}. and in sections : \n"
-    f"- Copywriting \n"
-    f"- SEO Copywriting \n"
-    f"- Audience Analysis and Understanding \n"
-    f"It is about online training program in {LANGUAGE}. Answer in {LANGUAGE}.\n"
-    f"Do this IN ORDER:\n"
-    f"1) Silently reconstruct the clean question and the answer options from the OCR text.\n"
-    f"2) **READ AND USE** the content from these resources and their sublinks/files:\n"
-    f"    -- https://drive.google.com/file/d/14Rzs_R1zc2sOy4A-4Cha8sVgiOsN4Xr3/view?usp=drive_link\n"
-    f"\n"
-    f"Output rules (strict):\n"
-    f"- Show the reconstructed question with answers .\n"
-    f"- The final answer phrase or option letter(s) **NOTHING ELSE** \n"
-    f"- Prompt final answer as \"Answer:\"\n"
-    f"- If it’s a matching question, response should contain matched pairs (e.g., A→III, B→I, C→II).\n"
-    f"- If a numeric/algebraic result is requested, return ONLY the final value/expression (fractions allowed), no steps.\n"
-)
-
+PROMPT_PATH = Path("prompts/prompt.txt")
 
 
 def log(text):
@@ -49,7 +32,19 @@ def log(text):
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         f.write(f"[{timestamp}] {text}\n")
 
+def load_prompt_template(PROMPT_PATH: str) -> str:
+    if not PROMPT_PATH.exists():
+        raise FileNotFoundError(
+            f"Impact prompt not found at {PROMPT_PATH}"
+        )
+    return PROMPT_PATH.read_text(encoding="utf-8")
 
+def build_prompt() -> str:
+   return load_prompt_template(PROMPT_PATH)
+
+    # return (
+    #     template.replace("{{PROMPT_DATA}}", json.dumps(semantic_flow, indent=2, ensure_ascii=False))
+    # )
 
 def process_screenshot():
     log("processing screenshot (vision)...")
@@ -80,7 +75,7 @@ def process_screenshot():
             "messages": [
                 {
                     "role": "system",
-                    "content": prompt
+                    "content": build_prompt
                 },
                 {
                     "role": "user",
@@ -105,11 +100,10 @@ def process_screenshot():
             "max_tokens": 300
         }
 
-        response = requests.post(
-            "https://openrouter.ai/api/v1/chat/completions",
-            headers=OPENROUTER_HEADERS,
-            json=payload,
-            timeout=60
+        response = requests.post(OPENROUTER_URL,
+             headers=OPENROUTER_HEADERS,
+             json=payload,
+             timeout=60
         )
 
         if response.status_code != 200:
