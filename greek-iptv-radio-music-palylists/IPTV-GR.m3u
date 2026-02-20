@@ -1,13 +1,17 @@
 #EXTM3U
 
 #EXTINF:-1 group-title="TV" TVG-ID="ERT1" tvg-name="ERT 1" tvg-logo="https://files2.app.ertflix.gr/files/channels/ert1-logo-800x300-f.png?m=resize&w=240&h=136",ERT1
-https://ertflix.ascdn.broadpeak.io/ertlive/ert1/clrdef24723b/index.mpd
+https://ert-ucdn.broadpeak-aas.com/bpk-tv/ERT1/default/index.mpd
 
 #EXTINF:-1 group-title="TV" TVG-ID="ERT2" tvg-name="ERT 2" tvg-logo="https://files2.app.ertflix.gr/files/channels/ert2-logo-800x300-f.png?m=resize&w=240&h=136",ERT2
-https://ertflix-greece.siliconweb.com/mpegts/618618_2341557/master_mpegts.m3u8
+https://ert-ucdn.broadpeak-aas.com/bpk-tv/ERT2/default/index.mpd
 
 #EXTINF:-1 group-title="TV" TVG-ID="ERT3" tvg-name="ERT 3" tvg-logo="https://files2.app.ertflix.gr/files/channels/ert3-logo-800x300-f.png?m=resize&w=240&h=136",ERT3
-https://ertflix-greece.siliconweb.com/cmaf/618618_2341560/index.mpd
+https://ert-ucdn.broadpeak-aas.com/bpk-tv/ERT3/default/index.mpd
+
+
+#EXTINF:-1 group-title="TV" TVG-ID="MEGA" tvg-name="MEGA" tvg-logo="https://iconape.com/wp-content/files/aq/285493/png/285493.png",MEGA
+https://wow.anixa.tv/live/mega/playlist.m3u8
 
 #EXTINF:-1 group-title="TV" TVG-ID="ANT1" tvg-name="ANT1" tvg-logo="https://upload.wikimedia.org/wikipedia/el/a/ac/Ant1.png",ANT1
 #KODIPROP:inputstream=inputstream.adaptive
@@ -35,6 +39,12 @@ https://es1.crystalweb.net:1936/netmaxtv/netmaxtv/playlist.m3u8
 #EXTINF:-1 group-title="TV" TVG-ID="Groovy" tvg-name="Groovy" tvg-logo="http://blog.lcotiv.com/i/45974462283.png",Groovy
 https://web.onair-radio.eu/groovytv/groovytv/playlist.m3u8
 
+#EXTINF:-1 group-title="TV" TVG-ID="Sierra" tvg-name="Sierra" tvg-logo="https://sierrachannel.com/wp-content/uploads/2025/07/Asset-4@2x.png",Sierra
+https://fr.crystalweb.net:1936/sierra/sierra/playlist.m3u8
+
+#EXTINF:-1 group-title="TV" TVG-ID="ExtasyTV" tvg-name="ExtasyTV" tvg-logo="",Extasy TV
+https://eu1.servers10.com:8081/8332/tracks-v1a1/mono.m3u8
+
 #EXTINF:-1 group-title="TV" tvg-name="ERT NEWS" tvg-logo="https://files2.app.ertflix.gr/files/channels/ert-news-logo-800x300.png?m=resize&w=240&h=136",ERT NEWS
 https://ertflix.ascdn.broadpeak.io/ertlive/ertnews/default/index.m3u8
 
@@ -43,8 +53,6 @@ https://c98db5952cb54b358365984178fb898a.msvdn.net/live/S99841657/NU0xOarAMJ5X/p
 
 #EXTINF:-1 group-title="TV" TVG-ID="VouliTV" tvg-name="VouliTV" tvg-logo="https://www.hellenicparliament.gr/UserFiles/683211ad-ac7d-4669-b8d1-bc1bef970455/bouliTV_1.png",VouliTV
 https://diavlos-cache.cnt.grnet.gr/parltv/webtv-1b.sdp/chunklist.m3u8
-
-
 
 #EXTINF:-1 group-title="TV" tvg-name="Makedonia TV" tvg-logo="https://i.imgur.com/6Ir6wcR.png" tvg-id="MakedoniaTV.gr" group-title="Greece",Makedonia TV
 https://lcdn.antennaplus.gr/r444865966c0847fca53b9b0c133af7a9/eu-central-1/6415884360001/playlist.m3u8
