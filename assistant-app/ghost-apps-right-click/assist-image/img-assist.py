@@ -12,7 +12,7 @@ from mss import mss
 from PIL import Image
 from send_email import EmailSender
 
-THEME= "Aptitude Tests"
+THEME= "EKEK - Digital Content Writer"
 LANGUAGE= "GREEK"
 OPENROUTER_URL = "https://openrouter.ai/api/v1/chat/completions"
 OPENROUTER_API_KEY = ""  # put your key here
@@ -75,7 +75,7 @@ def process_screenshot():
             "messages": [
                 {
                     "role": "system",
-                    "content": build_prompt
+                    "content": build_prompt()
                 },
                 {
                     "role": "user",
