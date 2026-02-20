@@ -4,7 +4,7 @@ import random
 import pyautogui
 from pynput import mouse
 
-CLICK_INTERVAL = 60      # seconds (2 minutes)
+CLICK_INTERVAL = 30      # seconds (2 minutes)
 JITTER_INTERVAL = 15      # seconds
 JITTER_PIXELS = 5
 
