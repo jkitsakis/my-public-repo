@@ -38,7 +38,25 @@ wget -qO "$TMP_DIR/jetbrains-toolbox.tar.gz" "$TOOLBOX_URL"
 tar -xzf "$TMP_DIR/jetbrains-toolbox.tar.gz" -C "$INSTALL_DIR"
 
 # Directly specify the toolbox binary location
-TOOLBOX_BINARY="$INSTALL_DIR/jetbrains-toolbox-3.0.1.59888/bin/jetbrains-toolbox"
+# Find extracted toolbox directory dynamically
+TOOLBOX_DIR="$(find "$INSTALL_DIR" -maxdepth 1 -type d -name "jetbrains-toolbox-*" | sort | tail -n 1)"
+
+if [[ -z "$TOOLBOX_DIR" ]]; then
+  echo "❌ Toolbox directory not found after extraction."
+  exit 1
+fi
+
+TOOLBOX_BINARY="$TOOLBOX_DIR/bin/jetbrains-toolbox"
+
+# Ensure executable
+chmod +x "$TOOLBOX_BINARY" || true
+
+# Check if binary exists
+if [[ ! -x "$TOOLBOX_BINARY" ]]; then
+  echo "❌ Toolbox binary not found or not executable. Found these files instead:"
+  find "$INSTALL_DIR" -type f -name "jetbrains-toolbox*"
+  exit 1
+fi
 
 # Check if the binary exists and is executable
 if [[ ! -x "$TOOLBOX_BINARY" ]]; then
