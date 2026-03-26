@@ -18,9 +18,9 @@ echo "🎯 Flatpak update..."
 flatpak update -y
 
 echo "🔌 Firmware update..."
-if command -v fwupdmgr &> /dev/null; then
-    sudo fwupdmgr refresh --force
-    sudo fwupdmgr update -y
+if command -v fwupdmgr &>/dev/null; then
+	sudo fwupdmgr refresh --force
+	sudo fwupdmgr update -y
 fi
 
 echo "📊 Upgradable packages:"
