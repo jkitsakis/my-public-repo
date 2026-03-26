@@ -11,6 +11,7 @@ from tkinter import filedialog, messagebox
 
 APP_TITLE = "Merge DOCX via Pandoc"
 
+
 def find_pandoc():
     """Return a path to pandoc executable if found, else None."""
     exe = shutil.which("pandoc")
@@ -28,6 +29,7 @@ def find_pandoc():
                 return p
     return None
 
+
 class MergeApp(tk.Tk):
     def __init__(self):
         super().__init__()
@@ -37,7 +39,9 @@ class MergeApp(tk.Tk):
 
         # Listbox for selected files
         self.listbox = tk.Listbox(self, selectmode=tk.EXTENDED, activestyle="dotbox")
-        self.listbox.grid(row=0, column=0, rowspan=6, sticky="nsew", padx=(10, 5), pady=10)
+        self.listbox.grid(
+            row=0, column=0, rowspan=6, sticky="nsew", padx=(10, 5), pady=10
+        )
 
         # Scrollbar for the listbox
         scrollbar = tk.Scrollbar(self, orient="vertical", command=self.listbox.yview)
@@ -48,7 +52,9 @@ class MergeApp(tk.Tk):
         btn_add = tk.Button(self, text="Add .docx…", command=self.add_files)
         btn_remove = tk.Button(self, text="Remove", command=self.remove_selected)
         btn_up = tk.Button(self, text="Move Up", command=lambda: self.move_selected(-1))
-        btn_down = tk.Button(self, text="Move Down", command=lambda: self.move_selected(1))
+        btn_down = tk.Button(
+            self, text="Move Down", command=lambda: self.move_selected(1)
+        )
         btn_clear = tk.Button(self, text="Clear All", command=self.clear_all)
         btn_merge = tk.Button(self, text="Merge…", command=self.merge_files)
 
@@ -61,8 +67,12 @@ class MergeApp(tk.Tk):
 
         # Status bar
         self.status = tk.StringVar(value="Ready")
-        status_bar = tk.Label(self, textvariable=self.status, anchor="w", relief="sunken")
-        status_bar.grid(row=6, column=0, columnspan=3, sticky="ew", padx=10, pady=(0, 10))
+        status_bar = tk.Label(
+            self, textvariable=self.status, anchor="w", relief="sunken"
+        )
+        status_bar.grid(
+            row=6, column=0, columnspan=3, sticky="ew", padx=10, pady=(0, 10)
+        )
 
         # Grid weights
         self.grid_columnconfigure(0, weight=1)
@@ -71,11 +81,13 @@ class MergeApp(tk.Tk):
         # Check Pandoc presence up-front
         self.pandoc_path = find_pandoc()
         if not self.pandoc_path:
-            self.status.set("Pandoc not found. Please install Pandoc or add it to PATH.")
+            self.status.set(
+                "Pandoc not found. Please install Pandoc or add it to PATH."
+            )
             messagebox.showwarning(
                 APP_TITLE,
                 "Pandoc was not found.\n\nInstall it from https://pandoc.org/installing.html "
-                "or add it to your PATH. You can still select files, but merging will fail without Pandoc."
+                "or add it to your PATH. You can still select files, but merging will fail without Pandoc.",
             )
 
     def add_files(self):
@@ -146,7 +158,9 @@ class MergeApp(tk.Tk):
         if not self.pandoc_path:
             self.pandoc_path = find_pandoc()
             if not self.pandoc_path:
-                messagebox.showerror(APP_TITLE, "Pandoc not found. Install Pandoc or add it to PATH.")
+                messagebox.showerror(
+                    APP_TITLE, "Pandoc not found. Install Pandoc or add it to PATH."
+                )
                 return
 
         files = list(self.listbox.get(0, tk.END))
@@ -200,9 +214,11 @@ class MergeApp(tk.Tk):
         self.status.set(f"Done → {out_path}")
         messagebox.showinfo(APP_TITLE, f"✅ Merged {len(files)} files:\n\n{out_path}")
 
+
 def main():
     app = MergeApp()
     app.mainloop()
+
 
 if __name__ == "__main__":
     main()

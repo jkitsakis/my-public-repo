@@ -41,8 +41,11 @@ def generate_qr_with_text(data, filename="qrcode.png", output_size=(500, 500)):
 
     # Draw white background for text
     draw.rectangle(
-        [(text_x - 10, text_y - 5), (text_x + text_width + 10, text_y + text_height + 5)],
-        fill="white"
+        [
+            (text_x - 10, text_y - 5),
+            (text_x + text_width + 10, text_y + text_height + 5),
+        ],
+        fill="white",
     )
 
     # Draw the text
@@ -57,4 +60,6 @@ def generate_qr_with_text(data, filename="qrcode.png", output_size=(500, 500)):
 # Example Usage
 if __name__ == "__main__":
     phone_number = "6907218124"
-    generate_qr_with_text(phone_number, "../content/images/mobile_qr.png", output_size=(500, 500))
+    generate_qr_with_text(
+        phone_number, "../content/images/mobile_qr.png", output_size=(500, 500)
+    )

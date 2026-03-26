@@ -22,9 +22,9 @@ def main():
 
 
 def Read_In_Values(file_name):
-    data = [];
-    with open(file_name, 'r') as f:
-        r = csv.reader(f, delimiter=',');
+    data = []
+    with open(file_name, "r") as f:
+        r = csv.reader(f, delimiter=",")
         for row in r:
             data.append(row)
         return data
@@ -40,7 +40,7 @@ def AnalyzeValues(values_List):
     for day in values_List:
         # DISCECT REGULAR WINNING NUMBERS
         for numbers in range(0, 4):
-            #print(day[numbers])
+            # print(day[numbers])
             LotteryValues.append(day[numbers])
 
         # DISECT POWERBALL WINNNG NUcBMERS
@@ -48,7 +48,7 @@ def AnalyzeValues(values_List):
 
     # ADD LotteryValues TO A DICTIONARY WITH VALUES OF FREQUENCY
     for item in LotteryValues:
-        if (item in freqLotteryValues):
+        if item in freqLotteryValues:
             freqLotteryValues[item] += 1
         else:
             freqLotteryValues[item] = 1
@@ -59,7 +59,7 @@ def AnalyzeValues(values_List):
 
     # ADD PowerValues TO A DICTIONARY WITH VALUES OF FREQUENCY
     for item in PowerNumber:
-        if (item in freqPowerNumber):
+        if item in freqPowerNumber:
             freqPowerNumber[item] += 1
         else:
             freqPowerNumber[item] = 1
@@ -68,17 +68,21 @@ def AnalyzeValues(values_List):
 
 
 def findBestValues(winningNumbers, powerNumber):
-    sorted_winning_numbers = dict(sorted(winningNumbers.items(), key=operator.itemgetter(1), reverse=True))
+    sorted_winning_numbers = dict(
+        sorted(winningNumbers.items(), key=operator.itemgetter(1), reverse=True)
+    )
     print("\nSORTED WINNING NUMBERS\n\n(number)   ==>     (frequency)\n")
 
     for key, value in sorted_winning_numbers.items():
-        print(f'{key:10} ==> {value:10d}')
+        print(f"{key:10} ==> {value:10d}")
 
-    sorted_power_numbers = dict(sorted(powerNumber.items(), key=operator.itemgetter(1), reverse=True))
+    sorted_power_numbers = dict(
+        sorted(powerNumber.items(), key=operator.itemgetter(1), reverse=True)
+    )
     print("\nSORTED POWER NUMBERS\n")
 
     for key, value in sorted_power_numbers.items():
-        print(f'{key:10} ==> {value:10d}')
+        print(f"{key:10} ==> {value:10d}")
 
     print("\nANALYSIS OF BEST POSSIBLE LOTTERY TICKET: \n")
     winningNumbers = list(map(int, sorted_winning_numbers))[0:5]

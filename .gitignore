@@ -1,2 +1,14 @@
-.git
-.aider.*
+__pycache__/
+__init__.py
+**/*/__init__.py
+**/*/__pycache__/
+output/
+source/
+.idea/
+/.venv
+/.env
+/.vs/
+/.aider.*
+/.vector_store
+/.code_db
+/.assistant_db

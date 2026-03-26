@@ -18,8 +18,8 @@ log "------------------------------------------------------------"
 sudo -v 2>/dev/null || true
 
 run() {
-  log "\n$ $*"
-  eval "$@" 2>&1 | tee -a "$REPORT" || true
+	log "\n$ $*"
+	eval "$@" 2>&1 | tee -a "$REPORT" || true
 }
 
 # ============================================
@@ -30,16 +30,16 @@ log "\n=== Detecting Wi-Fi Interface ==="
 WIFI_IF="$(nmcli -t -f DEVICE,TYPE device 2>/dev/null | awk -F: '$2=="wifi"{print $1; exit}')"
 
 if [[ -z "${WIFI_IF:-}" ]]; then
-  WIFI_IF="$(iw dev 2>/dev/null | awk '/Interface/{print $2; exit}')"
+	WIFI_IF="$(iw dev 2>/dev/null | awk '/Interface/{print $2; exit}')"
 fi
 
 if [[ -z "${WIFI_IF:-}" ]]; then
-  log "❌ No Wi-Fi interface found"
-  run "nmcli device status"
-  run "rfkill list"
-  exit 1
+	log "❌ No Wi-Fi interface found"
+	run "nmcli device status"
+	run "rfkill list"
+	exit 1
 else
-  log "✅ Wi-Fi Interface: $WIFI_IF"
+	log "✅ Wi-Fi Interface: $WIFI_IF"
 fi
 
 # ============================================
@@ -113,35 +113,35 @@ IP_ADDR="$(ip -4 -o addr show dev $WIFI_IF | awk '{print $4}' | cut -d/ -f1 | he
 CONN_STATE="$(nmcli -t -f GENERAL.STATE device show $WIFI_IF 2>/dev/null | sed 's/GENERAL.STATE://')"
 
 if [[ "$CONN_STATE" == *"connected"* || "$CONN_STATE" == "100" ]]; then
-  log "✅ Connected to Wi-Fi"
+	log "✅ Connected to Wi-Fi"
 else
-  log "⚠️ Not properly connected"
+	log "⚠️ Not properly connected"
 fi
 
 if [[ "$IP_ADDR" =~ ^169\.254\. ]]; then
-  log "❌ APIPA address → DHCP FAILED"
+	log "❌ APIPA address → DHCP FAILED"
 elif [[ -z "$IP_ADDR" ]]; then
-  log "❌ No IP address"
+	log "❌ No IP address"
 else
-  log "✅ IP Address: $IP_ADDR"
+	log "✅ IP Address: $IP_ADDR"
 fi
 
 if [[ -n "$GATEWAY_IP" ]] && ping -c1 "$GATEWAY_IP" &>/dev/null; then
-  log "✅ Gateway reachable"
+	log "✅ Gateway reachable"
 else
-  log "❌ Gateway unreachable"
+	log "❌ Gateway unreachable"
 fi
 
 if ping -c1 8.8.8.8 &>/dev/null; then
-  log "✅ Internet reachable"
+	log "✅ Internet reachable"
 else
-  log "❌ No internet access"
+	log "❌ No internet access"
 fi
 
 if getent hosts google.com &>/dev/null; then
-  log "✅ DNS working"
+	log "✅ DNS working"
 else
-  log "❌ DNS issue detected"
+	log "❌ DNS issue detected"
 fi
 
 # ============================================

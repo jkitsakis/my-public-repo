@@ -8,7 +8,16 @@ while i < 30:
     data = pd.read_excel("2-joker-24-23.xlsx")
 
     # Split the data into features (X) and target (y)
-    X = data[['1st_number', '2nd_number', '3rd_number', '4th_number', '5th_number', '6th_number']]
+    X = data[
+        [
+            "1st_number",
+            "2nd_number",
+            "3rd_number",
+            "4th_number",
+            "5th_number",
+            "6th_number",
+        ]
+    ]
     y = data.iloc[:, 0:]
 
     # Train a Random Forest Regression model
@@ -16,14 +25,16 @@ while i < 30:
     model.fit(X, y)
 
     # Generate a new set of random features for prediction
-    new_data = pd.DataFrame({
-        "1st_number": [randint(1, 49) for _ in range(100)],
-        "2nd_number": [randint(1, 49) for _ in range(100)],
-        "3rd_number": [randint(1, 49) for _ in range(100)],
-        "4th_number": [randint(1, 49) for _ in range(100)],
-        "5th_number": [randint(1, 49) for _ in range(100)],
-        "6th_number": [randint(1, 20) for _ in range(100)],
-    })
+    new_data = pd.DataFrame(
+        {
+            "1st_number": [randint(1, 49) for _ in range(100)],
+            "2nd_number": [randint(1, 49) for _ in range(100)],
+            "3rd_number": [randint(1, 49) for _ in range(100)],
+            "4th_number": [randint(1, 49) for _ in range(100)],
+            "5th_number": [randint(1, 49) for _ in range(100)],
+            "6th_number": [randint(1, 20) for _ in range(100)],
+        }
+    )
 
     # Use the trained model to predict the next 6 numbers for each set of features
     predictions = model.predict(new_data)
@@ -38,5 +49,8 @@ while i < 30:
     rounded_most_likely_set = [round(x) for x in most_likely_set]
 
     # Print the most likely set of numbers
-    print(str(f"{i+1:02d}") + ". The most likely set of numbers is:", rounded_most_likely_set)
+    print(
+        str(f"{i+1:02d}") + ". The most likely set of numbers is:",
+        rounded_most_likely_set,
+    )
     i += 1

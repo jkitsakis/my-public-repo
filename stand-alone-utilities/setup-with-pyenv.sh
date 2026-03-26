@@ -1,124 +1,191 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+# 🔥 FIX pyenv not working inside script
+export PYENV_ROOT="$HOME/.pyenv"
+export PATH="$PYENV_ROOT/bin:$PATH"
+
+if command -v pyenv >/dev/null 2>&1; then
+	eval "$(pyenv init -)"
+fi
+
 VENV_DIR=".venv"
 PROJECT_DIR="$(pwd -P)"
 
 pause() {
-  read -rp "Press Enter to continue..."
+	read -rp "Press Enter to continue..."
+}
+
+print_header() {
+	clear
+	echo "=============================="
+	echo "🐍 Pyenv Smart Venv Manager"
+	echo "📁 Project: $PROJECT_DIR"
+	if [ -d "$VENV_DIR" ]; then
+		echo "📦 Venv: ✅ exists"
+	else
+		echo "📦 Venv: ❌ missing"
+	fi
+	echo "=============================="
 }
 
 activate_venv() {
-  if [ ! -f "${VENV_DIR}/bin/activate" ]; then
-    echo "No virtual environment found at ${VENV_DIR}. Run option 1 first."
-    return 1
-  fi
-  # shellcheck disable=SC1090
-  source "${VENV_DIR}/bin/activate"
+	if [ ! -f "${VENV_DIR}/bin/activate" ]; then
+		echo "No virtual environment found."
+		return 1
+	fi
+	source "${VENV_DIR}/bin/activate"
 }
 
-create_venv_with_py() {
-  local pyexe="$1"
-  if ! command -v "$pyexe" >/dev/null 2>&1; then
-    echo "Python not found: $pyexe"
-    return 1
-  fi
-  "$pyexe" -m venv "$VENV_DIR"
-  # shellcheck disable=SC1090
-  source "${VENV_DIR}/bin/activate"
-  python -m pip install --upgrade pip
-  echo "✅ venv created & activated at $VENV_DIR (Python $(python -V))"
+get_pyenv_versions() {
+	pyenv versions --bare 2>/dev/null | sed '/^$/d'
 }
 
-export_requirements() {
-  activate_venv || return 1
-  python -m pip install --upgrade pip >/dev/null
-  echo "Exporting requirements.txt from ${PROJECT_DIR} ..."
-  python -m pip freeze > "${PROJECT_DIR}/requirements.txt"
-  echo "✅ Created ${PROJECT_DIR}/requirements.txt via pip freeze (full environment)."
+get_local_version() {
+	if [ -f ".python-version" ]; then
+		cat .python-version
+	else
+		echo ""
+	fi
+}
 
+select_or_auto_pyenv() {
+	local versions
+	mapfile -t versions < <(get_pyenv_versions)
+
+	if [ "${#versions[@]}" -eq 0 ]; then
+		echo "❌ No pyenv versions installed."
+		return 1
+	fi
+
+	local local_version
+	local_version="$(get_local_version)"
+
+	# Priority 1: .python-version
+	if [ -n "$local_version" ]; then
+		echo "📌 Using project Python (.python-version): $local_version"
+
+		if ! pyenv versions --bare | grep -q "^$local_version$"; then
+			echo "⚠️ Version not installed. Installing..."
+			pyenv install "$local_version"
+		fi
+
+		pyenv shell "$local_version"
+		return 0
+	fi
+
+	# Priority 2: only one version → auto
+	if [ "${#versions[@]}" -eq 1 ]; then
+		echo "📌 Only one version found → auto selecting: ${versions[0]}"
+		pyenv shell "${versions[0]}"
+		return 0
+	fi
+
+	# Priority 3: multiple → user selects
+	echo "Select Python version:"
+	for i in "${!versions[@]}"; do
+		printf "%d) %s\n" "$((i + 1))" "${versions[$i]}"
+	done
+
+	echo
+	read -rp "Choice: " choice
+
+	if ! [[ "$choice" =~ ^[0-9]+$ ]] || ((choice < 1 || choice > ${#versions[@]})); then
+		echo "Invalid selection"
+		return 1
+	fi
+
+	local selected="${versions[$((choice - 1))]}"
+	echo "✅ Selected: $selected"
+	pyenv shell "$selected"
+}
+
+create_venv() {
+	select_or_auto_pyenv || return 1
+
+	echo "Creating virtual environment..."
+	rm -rf "$VENV_DIR"
+	python -m venv "$VENV_DIR"
+
+	source "${VENV_DIR}/bin/activate"
+	python -m pip install --upgrade pip --quiet
+
+	echo "✅ venv created with $(python -V)"
 }
 
 install_requirements() {
-  activate_venv || return 1
-  if [ ! -f "${PROJECT_DIR}/requirements.txt" ]; then
-    echo "requirements.txt not found in ${PROJECT_DIR}"
-    return 1
-  fi
-  echo "Installing from requirements.txt..."
-  python -m pip install -r "${PROJECT_DIR}/requirements.txt"
-  echo "✅ Installation complete."
+
+	if [ ! -f "${VENV_DIR}/bin/activate" ]; then
+		echo "⚠️ No venv found → creating automatically..."
+		create_venv || return 1
+	fi
+
+	activate_venv || return 1
+
+	if [ ! -f "requirements.txt" ]; then
+		echo "No requirements.txt found"
+		return 1
+	fi
+
+	python -m pip install -r requirements.txt \
+		--prefer-binary \
+		--disable-pip-version-check
 }
 
-# Main menu loop
+export_requirements() {
+	activate_venv || return 1
+	python -m pip list --format=freeze >requirements.txt
+	echo "✅ requirements.txt updated"
+}
+
+show_info() {
+	print_header
+	echo "pyenv global: $(pyenv global 2>/dev/null || echo 'N/A')"
+	echo "pyenv local : $(get_local_version || echo 'N/A')"
+	echo
+
+	if activate_venv; then
+		echo "Venv Python:"
+		python -V
+		which python
+	fi
+	pause
+}
+
+# MENU
 while true; do
-  clear
-  echo "1. Choose Python version and create ${VENV_DIR}"
-  echo "2. Export requirements.txt"
-  echo "3. Install from requirements.txt"
-  echo "4. Exit"
-  read -rp "Enter your choice: " CHOICE
+	print_header
+	echo "1) Create .venv (smart pyenv)"
+	echo "2) Install requirements.txt"
+	echo "3) Export requirements.txt"
+	echo "4) Show environment info"
+	echo "5) Exit"
+	echo
 
-  case "$CHOICE" in
-    1)
-      clear
-      echo "Searching for installed Python versions (pyenv)..."
-      if command -v pyenv >/dev/null 2>&1; then
-        mapfile -t VERSIONS < <(pyenv versions --bare 2>/dev/null | sed '/^$/d' || true)
-      else
-        VERSIONS=()
-      fi
+	read -rp "Choice: " choice
 
-      if [ "${#VERSIONS[@]}" -eq 0 ]; then
-        echo "No pyenv versions found (or pyenv not installed)."
-        echo "You can enter a system Python executable instead (e.g., python3.12 or /usr/bin/python3)."
-        read -rp "Python executable to use: " PYEXE
-        if [ -z "${PYEXE:-}" ]; then
-          echo "No Python entered."
-          pause; continue
-        fi
-        create_venv_with_py "$PYEXE" || { pause; continue; }
-      else
-        echo
-        echo "Select a Python version:"
-        for idx in "${!VERSIONS[@]}"; do
-          printf "%d. %s\n" "$((idx+1))" "${VERSIONS[$idx]}"
-        done
-        read -rp "Enter the number of the Python version to use: " pychoice
-        if ! [[ "$pychoice" =~ ^[0-9]+$ ]] || (( pychoice < 1 || pychoice > ${#VERSIONS[@]} )); then
-          echo "Invalid selection."
-          pause; continue
-        fi
-        sel_version="${VERSIONS[$((pychoice-1))]}"
-        echo "Using pyenv Python: $sel_version"
-        # Activate pyenv version for this shell process
-        if ! pyenv shell "$sel_version"; then
-          echo "Failed to activate pyenv version $sel_version."
-          pause; continue
-        fi
-        create_venv_with_py "python" || { pause; continue; }
-      fi
-
-      # If venv already exists, inform
-      if [ -d "$VENV_DIR" ]; then
-        echo "Virtual environment is ready at $VENV_DIR."
-      fi
-      pause
-      ;;
-    2)
-      export_requirements || true
-      pause
-      ;;
-    3)
-      install_requirements || true
-      pause
-      ;;
-    4)
-      exit 0
-      ;;
-    *)
-      echo "Invalid choice."
-      pause
-      ;;
-  esac
+	case "$choice" in
+	1)
+		create_venv
+		pause
+		;;
+	2)
+		install_requirements
+		pause
+		;;
+	3)
+		export_requirements
+		pause
+		;;
+	4)
+		show_info
+		;;
+	5)
+		exit 0
+		;;
+	*)
+		echo "Invalid choice"
+		pause
+		;;
+	esac
 done

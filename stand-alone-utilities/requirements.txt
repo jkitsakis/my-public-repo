@@ -61,6 +61,7 @@ subliminal
 tinycss2
 tomlkit
 tornado
+tqdm
 traitlets
 trakit
 typing_extensions

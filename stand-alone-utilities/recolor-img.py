@@ -4,7 +4,9 @@ import matplotlib.pyplot as plt
 
 
 class LineRecolor:
-    def __init__(self, input_path, output_path, line_color=(242, 244, 247), threshold=None):
+    def __init__(
+        self, input_path, output_path, line_color=(242, 244, 247), threshold=None
+    ):
         self.input_path = input_path
         self.output_path = output_path
         self.line_color = line_color  # RGB format
@@ -16,7 +18,9 @@ class LineRecolor:
 
         # Enhance contrast to make lines more visible
         enhancer = ImageEnhance.Contrast(image)
-        image = enhancer.enhance(2)  # Increase the contrast by a factor of 2 (adjust as needed)
+        image = enhancer.enhance(
+            2
+        )  # Increase the contrast by a factor of 2 (adjust as needed)
 
         # Convert to NumPy array
         image_array = np.array(image)
@@ -27,7 +31,11 @@ class LineRecolor:
         # plt.show()
 
         # Debugging: Check the min and max values of pixels
-        print("Enhanced Image min and max pixel values:", image_array.min(), image_array.max())
+        print(
+            "Enhanced Image min and max pixel values:",
+            image_array.min(),
+            image_array.max(),
+        )
 
         # Detect lines based on threshold
         line_mask = image_array < image_array.max()  # Lines are typically darker
@@ -37,7 +45,9 @@ class LineRecolor:
         print("Number of lines detected (True values):", np.sum(line_mask))
 
         # Create a new RGB image with a white background
-        colored_image = Image.new("RGB", image.size, (255, 255, 255))  # White background
+        colored_image = Image.new(
+            "RGB", image.size, (255, 255, 255)
+        )  # White background
         colored_array = np.array(colored_image)
 
         # Apply the new line color where the mask is True
@@ -50,6 +60,7 @@ class LineRecolor:
         # Save the processed image
         final_image.save(self.output_path)
         print(f"Processed image saved at: {self.output_path}")
+
 
 def main():
     input_path = "background.png"  # Change to your input file

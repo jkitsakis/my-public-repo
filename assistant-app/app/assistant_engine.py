@@ -106,7 +106,7 @@ PHONETIC_GREEK_CORRECTIONS = {
     "μόουντ": "mode",
     "ναλ χαϊπόθεσις": "null hypothesis",
     "ναϊβ μπέις": "naive bayes",
-    "νειμπορς":"neighbours",
+    "νειμπορς": "neighbours",
     "νευρωνικά δίκτυα": "neural networks",
     "νιούραλ νέτγουερκ": "neural network",
     "νορμαλαϊζέισιον": "normalization",
@@ -158,7 +158,7 @@ PHONETIC_GREEK_CORRECTIONS = {
     "σοφτ κλάστερινγκ": "soft clustering",
     "σοφτμαξ": "softmax",
     "σπεσιφίσιτι": "specificity",
-    "στακινγκ":"stacking",
+    "στακινγκ": "stacking",
     "στάτς μόουντελς": "statsmodels",
     "στέμινγκ": "stemming",
     "στένταρντ ντεβιαίισιον": "standard deviation",
@@ -189,6 +189,7 @@ PHONETIC_GREEK_CORRECTIONS = {
     "χαϊπόθεσις τέστινγκ": "hypothesis testing",
     "όβερφιτινγκ": "overfitting",
 }
+
 
 def correct_technical_terms(text):
     print(f"Refined text 1 : {text}")
@@ -237,18 +238,15 @@ class AssistantEngine:
             #         protected_map[key] = term
             #         masked_text = pattern.sub(key, masked_text)
 
-            refine_prompt = (
-                f"You are {config.ROLE} in oral examination. Give a short answer in Greek"
-            )
-
+            refine_prompt = f"You are {config.ROLE} in oral examination. Give a short answer in Greek"
 
             client = openai.OpenAI(api_key=config.OPENAI_API_KEY)
             response = client.chat.completions.create(
                 model=config.OPENAI_MODEL,
                 messages=[
                     {"role": "system", "content": refine_prompt},
-                    {"role": "user", "content": masked_text}
-                ]
+                    {"role": "user", "content": masked_text},
+                ],
             )
             refined = response.choices[0].message.content.strip()
 
@@ -261,16 +259,18 @@ class AssistantEngine:
 
     def ask_ai(self, question):
         try:
-            system_prompt = (f"You are a {config.ROLE}. Please type a suitable answer for oral examination . "
-                             f"If possible in bullets to easy reading. "
-                             f"Give a short Answer in simple greek ")
+            system_prompt = (
+                f"You are a {config.ROLE}. Please type a suitable answer for oral examination . "
+                f"If possible in bullets to easy reading. "
+                f"Give a short Answer in simple greek "
+            )
             client = openai.OpenAI(api_key=config.OPENAI_API_KEY)
             response = client.chat.completions.create(
                 model=config.OPENAI_MODEL,
                 messages=[
                     {"role": "system", "content": system_prompt},
-                    {"role": "user", "content": question}
-                ]
+                    {"role": "user", "content": question},
+                ],
             )
             return response.choices[0].message.content
         except Exception as e:
@@ -279,7 +279,7 @@ class AssistantEngine:
     def log_session(self, question, answer):
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         with open(config.SESSION_LOG_FILE, "a", encoding="utf-8") as f:
-            f.write(f"\n[{timestamp}]\nQ: {question}\nA: {answer}\n" + "-"*50 + "\n")
+            f.write(f"\n[{timestamp}]\nQ: {question}\nA: {answer}\n" + "-" * 50 + "\n")
 
     def next_question_number(self):
         self.question_counter += 1

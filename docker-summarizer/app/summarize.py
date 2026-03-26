@@ -27,7 +27,9 @@ os.makedirs(EXPORT_FOLDER, exist_ok=True)
 def read_pdf(file_path):
     with open(file_path, "rb") as file:
         reader = PyPDF2.PdfReader(file)
-        return "\n".join([page.extract_text() for page in reader.pages if page.extract_text()])
+        return "\n".join(
+            [page.extract_text() for page in reader.pages if page.extract_text()]
+        )
 
 
 # ✅ Read DOCX files
@@ -46,12 +48,16 @@ def clean_text(text):
 
 # ✅ Chunk text efficiently
 def chunk_text(text, chunk_size=CHUNK_SIZE):
-    return textwrap.wrap(text, width=chunk_size, break_long_words=False, replace_whitespace=False)
+    return textwrap.wrap(
+        text, width=chunk_size, break_long_words=False, replace_whitespace=False
+    )
 
 
 # ✅ Summarize with Improved Settings
 def summarize_chunk(chunk):
-    inputs = tokenizer(chunk, return_tensors="pt", max_length=MAX_INPUT_LENGTH, truncation=True).to(device)
+    inputs = tokenizer(
+        chunk, return_tensors="pt", max_length=MAX_INPUT_LENGTH, truncation=True
+    ).to(device)
 
     with torch.no_grad():
         output = model.generate(
@@ -63,7 +69,7 @@ def summarize_chunk(chunk):
             repetition_penalty=2.0,
             length_penalty=1.0,
             no_repeat_ngram_size=3,
-            early_stopping=True
+            early_stopping=True,
         )
 
     return tokenizer.decode(output[0], skip_special_tokens=True)
@@ -79,7 +85,13 @@ def summarize_text(text):
     for i in range(0, len(chunks), batch_size):
         batch = chunks[i : i + batch_size]
 
-        inputs = tokenizer(batch, return_tensors="pt", padding=True, truncation=True, max_length=MAX_INPUT_LENGTH).to(device)
+        inputs = tokenizer(
+            batch,
+            return_tensors="pt",
+            padding=True,
+            truncation=True,
+            max_length=MAX_INPUT_LENGTH,
+        ).to(device)
 
         with torch.no_grad():
             outputs = model.generate(
@@ -91,10 +103,12 @@ def summarize_text(text):
                 repetition_penalty=2.0,
                 length_penalty=1.0,
                 no_repeat_ngram_size=3,
-                early_stopping=True
+                early_stopping=True,
             )
 
-        summaries.extend([tokenizer.decode(output, skip_special_tokens=True) for output in outputs])
+        summaries.extend(
+            [tokenizer.decode(output, skip_special_tokens=True) for output in outputs]
+        )
 
     return " ".join(summaries)
 
@@ -103,13 +117,19 @@ def summarize_text(text):
 def extract_topics(text):
     ner = pipeline("ner")
     topics = ner(text)
-    filtered_topics = list(set([t["word"].strip("##") for t in topics if len(t["word"]) > 3]))  # Remove junk
+    filtered_topics = list(
+        set([t["word"].strip("##") for t in topics if len(t["word"]) > 3])
+    )  # Remove junk
     return ", ".join(filtered_topics) if filtered_topics else "No topics detected"
 
 
 # ✅ Main Processing
 def main():
-    files = [file for file in os.listdir(IMPORT_FOLDER) if file.endswith(".docx") or file.endswith(".pdf")]
+    files = [
+        file
+        for file in os.listdir(IMPORT_FOLDER)
+        if file.endswith(".docx") or file.endswith(".pdf")
+    ]
 
     print(f"📂 Found files: {files}")
 
@@ -117,7 +137,9 @@ def main():
         file_path = os.path.join(IMPORT_FOLDER, filename)
 
         print(f"📖 Reading {filename} ...")
-        text = read_pdf(file_path) if filename.endswith(".pdf") else read_docx(file_path)
+        text = (
+            read_pdf(file_path) if filename.endswith(".pdf") else read_docx(file_path)
+        )
 
         print(f"✍️ Summarizing {filename} ...")
         if text.strip():

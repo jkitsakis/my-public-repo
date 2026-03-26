@@ -1,10 +1,15 @@
 #!/usr/bin/env bash
 
-systemctl --user daemon-reload
+echo "🔄 Restarting rclone mount..."
+
+# Kill existing mount
+pkill -f "rclone mount GDrive:"
+
 sleep 2
 
-systemctl --user restart rclone-gdrive
-sleep 2
+# Start new mount
+rclone mount GDrive: ~/GDrive \
+	--vfs-cache-mode writes \
+	--daemon
 
-systemctl --user status rclone-gdrive
-sleep 2
+echo "✅ Mounted GDrive"

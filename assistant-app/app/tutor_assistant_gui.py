@@ -1,4 +1,3 @@
-
 import datetime
 import os
 import tkinter as tk
@@ -60,19 +59,32 @@ class TutorAssistantApp:
         self.window.grid_rowconfigure(0, weight=1)  # Make the text_area row scalable
 
     def build_gui(self):
-        self.text_area = scrolledtext.ScrolledText(self.window, wrap=tk.WORD, font=("Arial", 10), height=20)
-        self.text_area.grid(row=0, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
+        self.text_area = scrolledtext.ScrolledText(
+            self.window, wrap=tk.WORD, font=("Arial", 10), height=20
+        )
+        self.text_area.grid(
+            row=0, column=0, columnspan=2, padx=10, pady=5, sticky="nsew"
+        )
         self.text_area.tag_configure("paragraph", spacing3=8, lmargin1=4, lmargin2=4)
         self.text_area.tag_configure("bold", font=("Arial", 12, "bold"))
 
-        self.status_label = tk.Label(self.window, text="Select devices and model, then start recording.",
-                                     font=("Arial", 12))
+        self.status_label = tk.Label(
+            self.window,
+            text="Select devices and model, then start recording.",
+            font=("Arial", 12),
+        )
         self.status_label.grid(row=1, column=0, columnspan=2, pady=5, sticky="ew")
 
-        tk.Label(self.window, text="Language/Model:", font=("Arial", 12)).grid(row=2, column=0, sticky="w", padx=10)
+        tk.Label(self.window, text="Language/Model:", font=("Arial", 12)).grid(
+            row=2, column=0, sticky="w", padx=10
+        )
         self.language_var = tk.StringVar(value=config.DEFAULT_LANGUAGE)
-        self.language_dropdown = ttk.Combobox(self.window, textvariable=self.language_var,
-                                              values=config.AVAILABLE_LANGUAGES, font=("Arial", 12))
+        self.language_dropdown = ttk.Combobox(
+            self.window,
+            textvariable=self.language_var,
+            values=config.AVAILABLE_LANGUAGES,
+            font=("Arial", 12),
+        )
         self.language_dropdown.grid(row=2, column=0, padx=150, sticky="ew")
 
         self.input_map = {}
@@ -84,43 +96,71 @@ class TutorAssistantApp:
         default_input_index, default_output_index = sd.default.device
 
         for idx, dev in enumerate(sd.query_devices()):
-            base_name = dev['name']
+            base_name = dev["name"]
             label = f"{label_device(base_name)} [{idx}]"
-            if dev['max_input_channels'] > 0 and base_name not in input_seen:
+            if dev["max_input_channels"] > 0 and base_name not in input_seen:
                 marker = ">" if idx == default_input_index else " "
                 input_list.append(f"{marker} {label}")
                 self.input_map[f"{marker} {label}"] = idx
                 input_seen.add(base_name)
-            if dev['max_output_channels'] > 0 and base_name not in output_seen:
+            if dev["max_output_channels"] > 0 and base_name not in output_seen:
                 marker = ">" if idx == default_output_index else " "
                 output_list.append(f"{marker} {label}")
                 self.output_map[f"{marker} {label}"] = idx
                 output_seen.add(base_name)
 
-        tk.Label(self.window, text="Input Device:", font=("Arial", 12)).grid(row=3, column=0, sticky="w", padx=10)
+        tk.Label(self.window, text="Input Device:", font=("Arial", 12)).grid(
+            row=3, column=0, sticky="w", padx=10
+        )
         self.input_choice = tk.StringVar(value=input_list[0] if input_list else "")
-        self.input_dropdown = ttk.Combobox(self.window, values=input_list, textvariable=self.input_choice,
-                                           font=("Arial", 12))
+        self.input_dropdown = ttk.Combobox(
+            self.window,
+            values=input_list,
+            textvariable=self.input_choice,
+            font=("Arial", 12),
+        )
         self.input_dropdown.grid(row=3, column=0, padx=150, sticky="ew")
 
-        tk.Label(self.window, text="Output Device:", font=("Arial", 12)).grid(row=4, column=0, sticky="w", padx=10)
+        tk.Label(self.window, text="Output Device:", font=("Arial", 12)).grid(
+            row=4, column=0, sticky="w", padx=10
+        )
         self.output_choice = tk.StringVar(value=output_list[0] if output_list else "")
-        self.output_dropdown = ttk.Combobox(self.window, values=output_list, textvariable=self.output_choice,
-                                            font=("Arial", 12))
+        self.output_dropdown = ttk.Combobox(
+            self.window,
+            values=output_list,
+            textvariable=self.output_choice,
+            font=("Arial", 12),
+        )
         self.output_dropdown.grid(row=4, column=0, padx=150, sticky="ew")
 
         button_frame = tk.Frame(self.window)
         button_frame.grid(row=5, column=0, columnspan=2, pady=10)
-        self.toggle_button = tk.Button(button_frame, text="▶️ Start Recording", font=("Arial", 16), bg="lightgreen",
-                                       command=self.toggle_recording)
+        self.toggle_button = tk.Button(
+            button_frame,
+            text="▶️ Start Recording",
+            font=("Arial", 16),
+            bg="lightgreen",
+            command=self.toggle_recording,
+        )
         self.toggle_button.pack(side=tk.LEFT, padx=5)
 
-        self.manual_text = scrolledtext.ScrolledText(self.window, wrap=tk.WORD, font=("Arial", 12), height=4)
-        self.manual_text.grid(row=6, column=0, columnspan=2, padx=10, pady=5, sticky="nsew")
-        self.manual_text.bind("<Return>", lambda e: (self.submit_typed_question(), "break"))
+        self.manual_text = scrolledtext.ScrolledText(
+            self.window, wrap=tk.WORD, font=("Arial", 12), height=4
+        )
+        self.manual_text.grid(
+            row=6, column=0, columnspan=2, padx=10, pady=5, sticky="nsew"
+        )
+        self.manual_text.bind(
+            "<Return>", lambda e: (self.submit_typed_question(), "break")
+        )
 
-        submit_button = tk.Button(self.window, text="🧠 Submit Typed Question", font=("Arial", 14), bg="lightblue",
-                                  command=self.submit_typed_question)
+        submit_button = tk.Button(
+            self.window,
+            text="🧠 Submit Typed Question",
+            font=("Arial", 14),
+            bg="lightblue",
+            command=self.submit_typed_question,
+        )
         submit_button.grid(row=7, column=0, columnspan=2, pady=10, sticky="e")
 
     def toggle_recording(self):
@@ -144,12 +184,19 @@ class TutorAssistantApp:
 
             self.recording = True
             if self.stream is None:
-                self.stream = sd.RawInputStream(samplerate=16000, blocksize=8000, dtype='int16',
-                                                channels=1, callback=self.callback)
+                self.stream = sd.RawInputStream(
+                    samplerate=16000,
+                    blocksize=8000,
+                    dtype="int16",
+                    channels=1,
+                    callback=self.callback,
+                )
                 self.stream.start()
             else:
                 self.stream.start()
-            self.status_label.config(text=f"🎤 Recording from: {in_label} with model: {self.engine.language_choice}")
+            self.status_label.config(
+                text=f"🎤 Recording from: {in_label} with model: {self.engine.language_choice}"
+            )
         except Exception as e:
             self.status_label.config(text=f"Error starting recording: {e}")
 
@@ -196,10 +243,27 @@ class TutorAssistantApp:
             self.recorded_audio += bytes(indata)
 
     def update_gui(self, q_num, question, answer):
-        KEY_TERMS = ["KNN", "confusion matrix", "gradient descent", "SVM", "regression",
-                     "accuracy", "precision", "recall", "f1 score", "log loss", "AUC",
-                     "overfitting", "underfitting", "neural network", "epoch", "loss function",
-                     "PCA", "ROC", "decision tree"]
+        KEY_TERMS = [
+            "KNN",
+            "confusion matrix",
+            "gradient descent",
+            "SVM",
+            "regression",
+            "accuracy",
+            "precision",
+            "recall",
+            "f1 score",
+            "log loss",
+            "AUC",
+            "overfitting",
+            "underfitting",
+            "neural network",
+            "epoch",
+            "loss function",
+            "PCA",
+            "ROC",
+            "decision tree",
+        ]
 
         self.text_area.insert(tk.END, "", "paragraph")
         self.text_area.insert(tk.END, f"💬 Q{q_num}: ", ("bold", "paragraph"))
@@ -216,7 +280,6 @@ class TutorAssistantApp:
                 end_idx = f"{idx}+{len(term)}c"
                 self.text_area.tag_add("bold", idx, end_idx)
                 idx = self.text_area.search(term, end_idx, tk.END, nocase=True)
-
 
         self.log_to_file(question, answer)
 

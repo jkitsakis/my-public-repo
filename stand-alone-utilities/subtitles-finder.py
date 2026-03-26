@@ -1,279 +1,411 @@
 import os
 import re
-
+import time
 import chardet
+import threading
 import requests
-import tkinter as tk
-from tkinter import filedialog, messagebox
+
 from pathlib import Path
 from guessit import guessit
+from tqdm import tqdm
+from concurrent.futures import ThreadPoolExecutor, as_completed
+from dotenv import load_dotenv
 
-# ====== OpenSubtitles.com API CONFIG ======
-OPENSUBTITLES_API_KEY = 'GrYUKj75bQ3m13hnrGUK3CTvhsiaRsxu'
-OPENSUBTITLES_USERNAME = 'jokit'
-OPENSUBTITLES_PASSWORD = 'opensubtitlesJokit73'
+load_dotenv()
 
-# ====== GUI: Select Video File ======
-def select_video_file():
-    tk.Tk().withdraw()
-    file_path = filedialog.askopenfilename(
-        title="Select a video file",
-        filetypes=[("Video Files", "*.mp4 *.mkv *.avi *.mov *.flv *.wmv")]
-    )
-    return Path(file_path) if file_path else None
+# =========================================================
+# CONFIG
+# =========================================================
+NAS_ROOT = Path("/home/yannis/NAS310S/video/incoming/")
+VIDEO_EXTENSIONS = (".mp4", ".mkv", ".avi", ".mov", ".flv", ".wmv")
 
-def select_video_folder():
-    tk.Tk().withdraw()
-    folder_path = filedialog.askdirectory(title="Select a folder with video files")
-    return Path(folder_path) if folder_path else None
+MAX_WORKERS = 3
+REQUEST_TIMEOUT = 20
+MAX_RETRIES = 4
+BACKOFF_BASE = 1.5
+RATE_LIMIT_SECONDS = 0.5
 
+SEARCH_RESULTS_LIMIT_EL = 10
+SEARCH_RESULTS_LIMIT_EN = 5
 
-def get_opensubtitles_token():
-    url = "https://api.opensubtitles.com/api/v1/login"
-    headers = {
-        "Api-Key": OPENSUBTITLES_API_KEY,
-        "Content-Type": "application/json",
-        "User-Agent": "SubtitlesFinderApp v1.0.0"
-    }
-    data = {"username": OPENSUBTITLES_USERNAME, "password": OPENSUBTITLES_PASSWORD}
-    response = requests.post(url, json=data, headers=headers)
-    response.raise_for_status()
-    return response.json()['token']
+FAIL_406_COUNT = 0
+FAIL_406_LOCK = threading.Lock()
 
-def search_opensubtitles(token, query, language):
-    url = "https://api.opensubtitles.com/api/v1/subtitles"
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Api-Key": OPENSUBTITLES_API_KEY,
-        "Content-Type": "application/json",
-        "User-Agent": "SubtitlesFinderApp v1.0.0"
-    }
-    params = {
-        "languages": language,
-        "query": query,
-        "order_by": "download_count",
-        "order_direction": "desc"
-    }
-    response = requests.get(url, headers=headers, params=params)
-    if not response.ok:
-        print("🔍 Status:", response.status_code)
-        print("🔍 Response:", response.text)
-        response.raise_for_status()
-    return response.json()['data']
+RETRY_QUEUE = []
+RETRY_LOCK = threading.Lock()
+
+COOLDOWN_UNTIL = 0
+
+USER_AGENT = "SubtitlesFinder/3.0 (yannis)"
+
+API_KEY = os.getenv("OPENSUBTITLES_API_KEY")
+USERNAME = os.getenv("OPENSUBTITLES_USERNAME")
+PASSWORD = os.getenv("OPENSUBTITLES_PASSWORD")
+
+# =========================================================
+# GLOBALS
+# =========================================================
+SESSION = requests.Session()
+
+TOKEN = None
+TOKEN_LOCK = threading.Lock()
+
+RATE_LOCK = threading.Lock()
+LAST_REQUEST = 0.0
+
+SEARCH_CACHE = {}
+CACHE_LOCK = threading.Lock()
 
 
-def generate_guessit_query(video_path):
-    guess = guessit(video_path.name)
-
-    # --- Clean base title ---
-    title = guess.get('title', '')
-    if not title:
-        # fallback: remove dots, dashes, resolution tags manually
-        clean = video_path.stem
-        for junk in ['1080p', '2160p', '720p', 'x264', 'x265', 'WEBRip', 'WEB-DL',
-                     'BluRay', 'BRRip', 'HDRip', 'YTS', 'RARBG', 'AMZN', 'NF', 'DSNP',
-                     'HMAX', 'DD5', 'ATMOS']:
-            clean = clean.replace(junk, '')
-        title = clean.replace('.', ' ').replace('_', ' ').strip()
-
-    # Normalize variations
-    title = title.replace('.', ' ').replace('_', ' ').strip()
-
-    # --- Build result ---
-    if guess.get('type') == 'episode':
-        season = guess.get('season')
-        episode = guess.get('episode')
-        year = guess.get('year')
-
-        if season and episode:
-            return f"{title} {year} S{season:02d}E{episode:02d}"
-
-        # fallback if season/episode is partially missing
-        return title
-
-    elif guess.get('type') == 'movie':
-        year = guess.get('year')
-        return f"{title} {year}" if year else title
-
-    # Unknown type → fallback
-    return title
+# =========================================================
+# UTIL
+# =========================================================
+def log(msg):
+    print(msg)
 
 
-
-def opensubtitles(video_path, language):
-    print(f"\n [Opensubtitles] Downloading {language} subtitles for {video_path.name}_{language}...")
-
-    try:
-        token = get_opensubtitles_token()
-        guessit_query, title, season, episode = generate_guessit_query(video_path)
-        print(f"🔍 Trying guessit query: '{guessit_query}'")
-        results = search_opensubtitles(token, guessit_query, language)
-        if results:
-            count = 1
-            downloaded = False
-            for result in results:
-                for file in result['attributes']['files']:
-                    # Print the original subtitle file name if available
-                    file_name = file.get('file_name') or file.get('filename', '[unknown]')
-                    if subtitle_matches(title, season, episode, file_name):
-                        print(f"🌐 Original subtitle file name to Download: {file_name}")
-
-                        output_path = video_path.with_name(f"{video_path.stem}.{language}.{count}.srt")
-                        download_opensubtitles(token, file['file_id'], output_path)
-                        count += 1
-                        downloaded = True
-                    else:
-                        print(f" Probably irrelevant file : {file_name}")
-
-            if downloaded:
-                return True
-    except Exception as e:
-        print(f"Guessit API search failed: {e}")
-
-import re
-
-def subtitle_matches(title, season, episode, file_name):
-    file_clean = re.sub(r'[^a-zA-Z0-9]+', ' ', file_name.lower())
-
-    # --- 1. Title words check (ignore year if exists) ---
-    title_clean = re.sub(r'[^a-zA-Z0-9]+', ' ', title.lower()).strip()
-    title_words = [w for w in title_clean.split() if not w.isdigit()]
-
-    title_ok = all(word in file_clean for word in title_words)
-
-    # --- 2. Episode check if applicable ---
-    if season and episode:
-        ep_tag_1 = f"s{season:02d}e{episode:02d}".lower()
-        ep_tag_2 = f"{season}x{episode:02d}".lower()
-        ep_ok = ep_tag_1 in file_name.lower() or ep_tag_2 in file_name.lower()
-        return title_ok and ep_ok
-
-    # If movie → title only
-    return title_ok
+def warn(msg):
+    print(f"⚠️ {msg}")
 
 
-def generate_guessit_query(video_path):
-    guess = guessit(video_path.name)
-
-    # --- Extract base fields ---
-    raw_title = guess.get('title', '')
-    season = guess.get('season')
-    episode = guess.get('episode')
-    year = guess.get('year')
-    gtype = guess.get('type')
-
-    # --- Clean title ---
-    if not raw_title:
-        # fallback simple cleanup
-        clean = video_path.stem
-        for junk in ['1080p', '2160p', '720p', 'x264', 'x265', 'WEBRip', 'WEB-DL',
-                     'BluRay', 'BRRip', 'HDRip', 'YTS', 'RARBG', 'AMZN', 'NF', 'DSNP',
-                     'HMAX', 'DD5', 'ATMOS']:
-            clean = clean.replace(junk, '')
-        raw_title = clean
-
-    # normalize
-    title = raw_title.replace('.', ' ').replace('_', ' ').strip()
-
-    # --- Build query ---
-    if gtype == 'episode':
-        if season and episode:
-            # include year only if available
-            if year:
-                query = f"{title} {year} S{season:02d}E{episode:02d}"
-            else:
-                query = f"{title} S{season:02d}E{episode:02d}"
-        else:
-            query = title
-
-    elif gtype == 'movie':
-        if year:
-            query = f"{title} {year}"
-        else:
-            query = title
-
-    else:
-        query = title
-
-    return query.strip(), title, season, episode
+def err(msg):
+    print(f"❌ {msg}")
 
 
-
-def download_opensubtitles(token, file_id, output_path):
-    url = "https://api.opensubtitles.com/api/v1/download"
-    headers = {
-        "Authorization": f"Bearer {token}",
-        "Api-Key": OPENSUBTITLES_API_KEY,
-        "User-Agent": "SubtitlesFinderApp v1.0.0"
-    }
-    response = requests.post(url, headers=headers, json={"file_id": file_id})
-    if not response.ok:
-        print("🔍 Status:", response.status_code)
-        print("🔍 Response:", response.text)
-        response.raise_for_status()
-    download_url = response.json()['link']
-
-    subtitle_response = requests.get(download_url)
-    if not subtitle_response.ok:
-        print("🔍 Status:", subtitle_response.status_code)
-        print("🔍 Response:", subtitle_response.text)
-        response.raise_for_status()
-
-    # Detect encoding
-    detected = chardet.detect(subtitle_response.content)
-    text = subtitle_response.content.decode(detected['encoding'], errors='replace')
-
-    with open(output_path, 'w', encoding='utf-8') as f:
-        f.write(text)
-
-    print(f"✅ Greek subtitle saved to {output_path.name} using OpenSubtitles.com API.\n")
+# =========================================================
+# RATE LIMIT
+# =========================================================
+def rate_limit():
+    global LAST_REQUEST
+    with RATE_LOCK:
+        now = time.monotonic()
+        if now - LAST_REQUEST < RATE_LIMIT_SECONDS:
+            time.sleep(RATE_LIMIT_SECONDS - (now - LAST_REQUEST))
+        LAST_REQUEST = time.monotonic()
 
 
-def convert_subtitle_to_utf8(subtitle_path):
-    try:
-        with open(subtitle_path, 'rb') as f:
-            raw_data = f.read()
-
-        # Try to decode as best as possible
+# =========================================================
+# REQUEST
+# =========================================================
+def request(method, url, **kwargs):
+    for i in range(MAX_RETRIES):
         try:
-            text = raw_data.decode('utf-8')
-        except UnicodeDecodeError:
-            text = raw_data.decode('iso-8859-7')  # Greek fallback
+            rate_limit()
+            r = SESSION.request(method, url, timeout=REQUEST_TIMEOUT, **kwargs)
 
-        with open(subtitle_path, 'w', encoding='utf-8') as f:
-            f.write(text)
+            if r.status_code == 401:
+                clear_token()
+                raise Exception("401 token expired")
 
-        # print(f"📝 Converted subtitle to UTF-8: {subtitle_path.name}")
+            if r.status_code in (429, 500, 502, 503):
+                raise Exception(f"{r.status_code} retry")
+
+            r.raise_for_status()
+            return r
+
+        except Exception as e:
+            if i == MAX_RETRIES - 1:
+                raise
+            time.sleep(BACKOFF_BASE**i)
+
+
+# =========================================================
+# TOKEN
+# =========================================================
+def clear_token():
+    global TOKEN
+    with TOKEN_LOCK:
+        TOKEN = None
+
+
+def get_token():
+    global TOKEN
+    with TOKEN_LOCK:
+        if TOKEN:
+            return TOKEN
+
+        r = request(
+            "POST",
+            "https://api.opensubtitles.com/api/v1/login",
+            headers={"Api-Key": API_KEY, "User-Agent": USER_AGENT},
+            json={"username": USERNAME, "password": PASSWORD},
+        )
+
+        TOKEN = r.json()["token"]
+        return TOKEN
+
+
+def headers(token):
+    return {
+        "Authorization": f"Bearer {token}",
+        "Api-Key": API_KEY,
+        "User-Agent": USER_AGENT,
+    }
+
+
+# =========================================================
+# VIDEO INFO
+# =========================================================
+def extract_video_info(video):
+    name = video.name.lower()
+
+    release = name.split("-")[-1].split(".")[0] if "-" in name else None
+
+    resolution = next((r for r in ["2160p", "1080p", "720p"] if r in name), None)
+
+    source = None
+    if "bluray" in name:
+        source = "bluray"
+    elif "web" in name:
+        source = "web"
+
+    return {"release": release, "resolution": resolution, "source": source}
+
+
+# =========================================================
+# QUERY
+# =========================================================
+def build_query(video):
+    g = guessit(video.name)
+
+    title = g.get("title", video.stem)
+    season = g.get("season")
+    episode = g.get("episode")
+    year = g.get("year")
+
+    if season and episode:
+        return f"{title} S{season:02d}E{episode:02d}", title, season, episode, year
+
+    return f"{title} {year}" if year else title, title, None, None, year
+
+
+# =========================================================
+# SCORE
+# =========================================================
+def norm(x):
+    return re.sub(r"\W+", " ", x.lower())
+
+
+def score(name, title, season, episode, year, vinfo):
+    s = 0
+    n = name.lower()
+
+    # title
+    for w in norm(title).split():
+        if w in n:
+            s += 3
+
+    # episode
+    if season and episode:
+        if f"s{season:02d}e{episode:02d}" in n:
+            s += 25
+        else:
+            s -= 10
+
+    # year
+    if year and str(year) in n:
+        s += 3
+
+    # source
+    if vinfo["source"]:
+        if vinfo["source"] in n:
+            s += 6
+        else:
+            s -= 3
+
+    # resolution
+    if vinfo["resolution"]:
+        if vinfo["resolution"] in n:
+            s += 5
+        else:
+            s -= 2
+
+    # release
+    if vinfo["release"] and vinfo["release"] in n:
+        s += 8
+
+    # filters
+    if "forced" in n:
+        s -= 8
+    if "sdh" in n:
+        s -= 4
+
+    return s
+
+
+# =========================================================
+# SEARCH
+# =========================================================
+def search(token, query, lang):
+    key = (query, lang)
+
+    with CACHE_LOCK:
+        if key in SEARCH_CACHE:
+            return SEARCH_CACHE[key]
+
+    r = request(
+        "GET",
+        "https://api.opensubtitles.com/api/v1/subtitles",
+        headers=headers(token),
+        params={"query": query, "languages": lang},
+    )
+
+    data = r.json().get("data", [])
+
+    with CACHE_LOCK:
+        SEARCH_CACHE[key] = data
+
+    return data
+
+
+# =========================================================
+# DOWNLOAD
+# =========================================================
+
+
+def wait_if_cooldown():
+    global COOLDOWN_UNTIL
+
+    while True:
+        now = time.time()
+        if now >= COOLDOWN_UNTIL:
+            return
+        sleep_time = int(COOLDOWN_UNTIL - now)
+        warn(f"Cooling down... waiting {sleep_time}s")
+        time.sleep(min(5, sleep_time))
+
+
+def download(token, file_id, path):
+    global FAIL_406_COUNT, COOLDOWN_UNTIL
+
+    # wait_if_cooldown()
+
+    try:
+        r = request(
+            "POST",
+            "https://api.opensubtitles.com/api/v1/download",
+            headers=headers(token),
+            json={"file_id": file_id},
+        )
+
+        url = r.json()["link"]
+
+        content = request("GET", url).content
+        enc = chardet.detect(content)["encoding"] or "utf-8"
+
+        path.write_text(content.decode(enc, errors="replace"), encoding="utf-8")
+
+        # reset on success
+        with FAIL_406_LOCK:
+            FAIL_406_COUNT = 0
+
+        return True
 
     except Exception as e:
-        print(f"⚠️ Could not convert {subtitle_path.name} to UTF-8: {e}")
+        if "406" in str(e):
+
+            with FAIL_406_LOCK:
+                FAIL_406_COUNT += 1
+
+                warn(f"406 skip {file_id} (count={FAIL_406_COUNT})")
+
+                # 🔥 detect limit
+                if FAIL_406_COUNT >= 8:
+                    COOLDOWN_UNTIL = time.time() + 60  # 60 sec pause
+                    warn("🚫 LIMIT detected → cooldown 60s")
+                    FAIL_406_COUNT = 0
+
+            return False
+
+        raise
 
 
-# ====== Main Application Entry ======
+# =========================================================
+# PROCESS
+# =========================================================
+
+
+def add_to_retry(video):
+    with RETRY_LOCK:
+        RETRY_QUEUE.append(video)
+
+
+def process(video):
+    try:
+        if video.with_suffix(".el.srt").exists():
+            return f"{video.name} → exists"
+
+        token = get_token()
+        query, title, season, episode, year = build_query(video)
+        vinfo = extract_video_info(video)
+
+        results = search(token, query, "el")
+
+        candidates = []
+        for r in results[:SEARCH_RESULTS_LIMIT_EL]:
+            for f in r["attributes"]["files"]:
+                sc = score(f.get("file_name", ""), title, season, episode, year, vinfo)
+                if sc > 5:
+                    candidates.append((sc, f))
+
+        candidates.sort(key=lambda x: (x[0], x[1].get("file_id", 0)), reverse=True)
+
+        for sc, f in candidates[:5]:
+            out = video.with_name(f"{video.stem}.el.srt")
+            if download(token, f["file_id"], out):
+                return f"{video.name} → Greek OK"
+
+        add_to_retry(video)
+        return f"{video.name} → queued for retry"
+
+    except Exception as e:
+        return f"{video.name} → ERROR {e}"
+
+
+# =========================================================
+# MAIN
+# =========================================================
+def choose_folder():
+    folders = [f for f in NAS_ROOT.iterdir() if f.is_dir()]
+
+    for i, f in enumerate(folders):
+        print(f"{i+1}) {f.name}")
+    print("0) ALL")
+
+    c = input("Select: ")
+
+    if c == "0":
+        return NAS_ROOT
+
+    return folders[int(c) - 1]
+
+
+def retry_failed():
+    if not RETRY_QUEUE:
+        return
+
+    warn(f"Retrying {len(RETRY_QUEUE)} failed videos...")
+
+    items = list(RETRY_QUEUE)
+    RETRY_QUEUE.clear()
+
+    for video in items:
+        result = process(video)
+        print("RETRY:", result)
+
+
 def main():
-    folder_path = select_video_folder()
-    if not folder_path:
-        print("❌ No folder selected.")
-        return
+    folder = choose_folder()
 
-    print(f"📂 Selected Folder: {folder_path}")
+    videos = [p for p in folder.rglob("*") if p.suffix.lower() in VIDEO_EXTENSIONS]
 
-    video_extensions = ('.mp4', '.mkv', '.avi', '.mov', '.flv', '.wmv')
-    video_files = list(folder_path.glob("*"))
-    video_files = [f for f in video_files if f.suffix.lower() in video_extensions]
+    with ThreadPoolExecutor(MAX_WORKERS) as ex:
+        futures = [ex.submit(process, v) for v in videos]
 
-    if not video_files:
-        print("❌ No video files found in the selected folder.")
-        return
+        for f in tqdm(as_completed(futures), total=len(futures)):
+            print(f.result())
 
-    for video_path in video_files:
-        print(f"\n🎬 Processing: {video_path.name}")
-        os.chdir(video_path.parent)
-
-        opensubtitlesFound = opensubtitles(video_path, 'el')
-
-        if not (opensubtitlesFound):
-            opensubtitles(video_path, 'en')
+    retry_failed()
 
 
 if __name__ == "__main__":

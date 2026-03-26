@@ -7,8 +7,10 @@ import importlib.resources as resources
 import os
 from hashlib import md5
 
+
 def image_to_hash(image):
     return md5(np.array(image).tobytes()).hexdigest()
+
 
 def extract_text_from_clipboard_image(previous_hash=None):
     try:
@@ -23,9 +25,13 @@ def extract_text_from_clipboard_image(previous_hash=None):
         image_np = np.array(image)
 
         # Check supported languages
-        lang_dir = resources.files('easyocr.character')
-        langs = [f.name.replace('_char.txt', '') for f in lang_dir.iterdir() if f.name.endswith('_char.txt')]
-        supported_langs = ['en']
+        lang_dir = resources.files("easyocr.character")
+        langs = [
+            f.name.replace("_char.txt", "")
+            for f in lang_dir.iterdir()
+            if f.name.endswith("_char.txt")
+        ]
+        supported_langs = ["en"]
         # if 'gre' in langs or 'el' in langs:
         #     supported_langs.append('el')
 
@@ -41,6 +47,7 @@ def extract_text_from_clipboard_image(previous_hash=None):
     except Exception as e:
         print(f"❌ An error occurred: {e}")
         return None, previous_hash
+
 
 if __name__ == "__main__":
     print("📋 Waiting for new clipboard images... (Press Ctrl+C to stop)\n")

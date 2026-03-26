@@ -20,9 +20,11 @@ from tkinter import filedialog, messagebox, ttk
 APP_TITLE = "Markdown → PDF/DOCX (with Math)"
 PDF_ENGINES = ["xelatex", "lualatex", "pdflatex"]
 
+
 def which_or_die(cmd: str):
     if shutil.which(cmd) is None:
         raise FileNotFoundError(f"'{cmd}' not found in PATH")
+
 
 def run_cmd(cmd):
     try:
@@ -30,7 +32,10 @@ def run_cmd(cmd):
         return proc.stdout.strip()
     except subprocess.CalledProcessError as e:
         err = e.stderr or e.stdout or ""
-        raise RuntimeError(f"Command failed ({e.returncode}):\n{' '.join(cmd)}\n\n{err}")
+        raise RuntimeError(
+            f"Command failed ({e.returncode}):\n{' '.join(cmd)}\n\n{err}"
+        )
+
 
 class App(tk.Tk):
     def __init__(self):
@@ -53,51 +58,70 @@ class App(tk.Tk):
         self._build_ui()
 
     def _build_ui(self):
-        pad = {'padx': 10, 'pady': 6}
+        pad = {"padx": 10, "pady": 6}
 
         frm = ttk.Frame(self)
         frm.pack(fill="both", expand=True)
 
         # Input MD
-        row1 = ttk.Frame(frm); row1.pack(fill="x", **pad)
+        row1 = ttk.Frame(frm)
+        row1.pack(fill="x", **pad)
         ttk.Label(row1, text="Markdown file:").pack(side="left")
-        ttk.Entry(row1, textvariable=self.input_md).pack(side="left", fill="x", expand=True, padx=8)
+        ttk.Entry(row1, textvariable=self.input_md).pack(
+            side="left", fill="x", expand=True, padx=8
+        )
         ttk.Button(row1, text="Browse…", command=self.pick_md).pack(side="left")
 
         # Output directory
-        row2 = ttk.Frame(frm); row2.pack(fill="x", **pad)
+        row2 = ttk.Frame(frm)
+        row2.pack(fill="x", **pad)
         ttk.Label(row2, text="Output folder:").pack(side="left")
-        ttk.Entry(row2, textvariable=self.out_dir).pack(side="left", fill="x", expand=True, padx=8)
+        ttk.Entry(row2, textvariable=self.out_dir).pack(
+            side="left", fill="x", expand=True, padx=8
+        )
         ttk.Button(row2, text="Choose…", command=self.pick_outdir).pack(side="left")
 
         # Reference DOCX
-        row3 = ttk.Frame(frm); row3.pack(fill="x", **pad)
+        row3 = ttk.Frame(frm)
+        row3.pack(fill="x", **pad)
         ttk.Label(row3, text="Reference .docx (optional):").pack(side="left")
-        ttk.Entry(row3, textvariable=self.reference_docx).pack(side="left", fill="x", expand=True, padx=8)
+        ttk.Entry(row3, textvariable=self.reference_docx).pack(
+            side="left", fill="x", expand=True, padx=8
+        )
         ttk.Button(row3, text="Browse…", command=self.pick_reference).pack(side="left")
 
         # Resource path
-        row4 = ttk.Frame(frm); row4.pack(fill="x", **pad)
+        row4 = ttk.Frame(frm)
+        row4.pack(fill="x", **pad)
         ttk.Label(row4, text="Resource path(s) (images):").pack(side="left")
-        ttk.Entry(row4, textvariable=self.resource_path).pack(side="left", fill="x", expand=True, padx=8)
+        ttk.Entry(row4, textvariable=self.resource_path).pack(
+            side="left", fill="x", expand=True, padx=8
+        )
         ttk.Label(row4, text="(use ':' on Unix, ';' on Windows)").pack(side="left")
 
         # Options
-        row5 = ttk.LabelFrame(frm, text="Options"); row5.pack(fill="x", **pad)
+        row5 = ttk.LabelFrame(frm, text="Options")
+        row5.pack(fill="x", **pad)
         # ttk.Checkbutton(row5, text="Generate PDF", variable=self.make_pdf).grid(row=0, column=0, sticky="w", padx=8, pady=6)
-        ttk.Checkbutton(row5, text="Generate DOCX", variable=self.make_docx).grid(row=0, column=1, sticky="w", padx=8, pady=6)
+        ttk.Checkbutton(row5, text="Generate DOCX", variable=self.make_docx).grid(
+            row=0, column=1, sticky="w", padx=8, pady=6
+        )
 
         # ttk.Label(row5, text="PDF engine:").grid(row=1, column=0, sticky="w", padx=8)
         # ttk.Combobox(row5, textvariable=self.pdf_engine, values=PDF_ENGINES, state="readonly", width=12)\
         #     .grid(row=1, column=1, sticky="w", padx=8)
 
-        ttk.Checkbutton(row5, text="Include Table of Contents", variable=self.include_toc)\
-            .grid(row=2, column=0, sticky="w", padx=8, pady=6)
+        ttk.Checkbutton(
+            row5, text="Include Table of Contents", variable=self.include_toc
+        ).grid(row=2, column=0, sticky="w", padx=8, pady=6)
         ttk.Label(row5, text="TOC depth:").grid(row=2, column=1, sticky="w", padx=8)
-        ttk.Spinbox(row5, from_=1, to=6, textvariable=self.toc_depth, width=5).grid(row=2, column=2, sticky="w", padx=8)
+        ttk.Spinbox(row5, from_=1, to=6, textvariable=self.toc_depth, width=5).grid(
+            row=2, column=2, sticky="w", padx=8
+        )
 
         # Actions + Log
-        row6 = ttk.Frame(frm); row6.pack(fill="x", **pad)
+        row6 = ttk.Frame(frm)
+        row6.pack(fill="x", **pad)
         ttk.Button(row6, text="Convert", command=self.convert).pack(side="right")
         ttk.Button(row6, text="Quit", command=self.destroy).pack(side="right", padx=8)
 
@@ -113,7 +137,7 @@ class App(tk.Tk):
     def pick_md(self):
         f = filedialog.askopenfilename(
             title="Select Markdown file",
-            filetypes=[("Markdown", "*.md *.markdown"), ("All files", "*.*")]
+            filetypes=[("Markdown", "*.md *.markdown"), ("All files", "*.*")],
         )
         if f:
             self.input_md.set(f)
@@ -129,7 +153,7 @@ class App(tk.Tk):
     def pick_reference(self):
         f = filedialog.askopenfilename(
             title="Select reference DOCX",
-            filetypes=[("Word Document", "*.docx"), ("All files", "*.*")]
+            filetypes=[("Word Document", "*.docx"), ("All files", "*.*")],
         )
         if f:
             self.reference_docx.set(f)
@@ -142,7 +166,11 @@ class App(tk.Tk):
                 messagebox.showerror(APP_TITLE, "Please select a valid Markdown file.")
                 return
 
-            outdir = Path(self.out_dir.get()).expanduser() if self.out_dir.get() else md.parent
+            outdir = (
+                Path(self.out_dir.get()).expanduser()
+                if self.out_dir.get()
+                else md.parent
+            )
             outdir.mkdir(parents=True, exist_ok=True)
 
             # if not self.make_pdf.get() and not self.make_docx.get():
@@ -157,7 +185,8 @@ class App(tk.Tk):
             base = [
                 "pandoc",
                 str(md),
-                "--from", "markdown+tex_math_dollars+tex_math_single_backslash",
+                "--from",
+                "markdown+tex_math_dollars+tex_math_single_backslash",
             ]
 
             # Resource paths
@@ -183,7 +212,9 @@ class App(tk.Tk):
                 if ref:
                     refp = Path(ref).expanduser()
                     if not refp.exists():
-                        messagebox.showerror(APP_TITLE, f"Reference DOCX not found:\n{refp}")
+                        messagebox.showerror(
+                            APP_TITLE, f"Reference DOCX not found:\n{refp}"
+                        )
                         return
                     args += ["--reference-doc", str(refp)]
 
@@ -223,9 +254,11 @@ class App(tk.Tk):
             self.log_insert(f"Unexpected error: {e}\n")
             messagebox.showerror(APP_TITLE, f"Unexpected error:\n\n{e}")
 
+
 def main():
     app = App()
     app.mainloop()
+
 
 if __name__ == "__main__":
     main()

@@ -33,7 +33,7 @@ EOF
 echo "🔍 Testing connection..."
 
 if git ls-remote https://github.com/$GITHUB_USER/my-private-repo.git &>/dev/null; then
-    echo "🎉 Authentication successful!"
+	echo "🎉 Authentication successful!"
 else
-    echo "❌ Authentication failed."
+	echo "❌ Authentication failed."
 fi
