@@ -171,7 +171,7 @@ dev)
 full)
 	repair_system
 	clean_system
-	# 	dev_cleanup
+# 	dev_cleanup
 	;;
 *)
 	echo "❌ Usage: $0 [clean|repair|dev|full]"
