@@ -64,7 +64,7 @@ clean_system() {
 	# Flatpak
 	if command -v flatpak &>/dev/null; then
 		sudo flatpak uninstall --unused -y || true
-		sudo flatpak repair --noninteractive || true
+		sudo flatpak repair -y || true
 	fi
 
 	# Trash
@@ -171,7 +171,7 @@ dev)
 full)
 	repair_system
 	clean_system
-	dev_cleanup
+# 	dev_cleanup
 	;;
 *)
 	echo "❌ Usage: $0 [clean|repair|dev|full]"
