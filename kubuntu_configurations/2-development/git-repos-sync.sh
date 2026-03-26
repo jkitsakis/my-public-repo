@@ -2,14 +2,7 @@
 set -euo pipefail
 
 # =========================================================
-# 🚀 ENTERPRISE GIT ORCHESTRATOR
-# - Safe clone (SSH → HTTPS fallback)
-# - Safe sync (rebase → merge fallback)
-# - Conflict protection (no broken repo state)
-# - Stash handling
-# - Parallel execution
-# - Logging (file + console)
-# - Pre-commit + formatting
+# 🚀 ENTERPRISE GIT ORCHESTRATOR (NO PRE-COMMIT)
 # =========================================================
 
 BASE_DIR="$HOME/Workspace/GitHub"
@@ -78,7 +71,7 @@ setup_git() {
 install_dev_tools() {
 	log "Installing tools..."
 
-	has_command python3 && python3 -m pip install --user pre-commit black >/dev/null 2>&1 || true
+	has_command python3 && python3 -m pip install --user black >/dev/null 2>&1 || true
 	has_command npm && npm install -g prettier >/dev/null 2>&1 || true
 	sudo apt-get update -y >/dev/null 2>&1 || true
 	sudo apt-get install -y shfmt >/dev/null 2>&1 || true
@@ -130,6 +123,11 @@ sync_repo() {
 		cd "$DIR"
 
 		# ---------------------------------
+		# REMOVE ANY GIT HOOKS (NO PRE-COMMIT EVER)
+		# ---------------------------------
+		rm -f .git/hooks/pre-commit .git/hooks/pre-push .git/hooks/commit-msg || true
+
+		# ---------------------------------
 		# STASH
 		# ---------------------------------
 		STASHED=0
@@ -173,15 +171,14 @@ sync_repo() {
 		fi
 
 		# ---------------------------------
-		# HOOKS / FORMAT
+		# OPTIONAL FORMATTING (SAFE)
 		# ---------------------------------
-		if has_command pre-commit; then
-			pre-commit install >/dev/null 2>&1 || true
-			pre-commit run --all-files >/dev/null 2>&1 || true
-		fi
+		has_command black && black . >/dev/null 2>&1 || true
+		has_command prettier && prettier --write . >/dev/null 2>&1 || true
+		has_command shfmt && shfmt -w . >/dev/null 2>&1 || true
 
 		# ---------------------------------
-		# COMMIT / PUSH
+		# COMMIT / PUSH (NO HOOKS WILL RUN)
 		# ---------------------------------
 		if [[ -n "$(git status --porcelain)" ]]; then
 			log "[$NAME] Committing changes"
