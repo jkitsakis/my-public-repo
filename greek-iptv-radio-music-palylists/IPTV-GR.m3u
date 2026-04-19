@@ -25,7 +25,7 @@ https://alphatvlive2.siliconweb.com/alphatvlive/live_abr/playlist.m3u8
 https://livestar.siliconweb.com/media/star4/star4newhd.m3u8
 
 #EXTINF:-1 group-title="TV" TVG-ID="STAR" tvg-name="SKAI" tvg-logo="https://upload.wikimedia.org/wikipedia/el/thumb/e/eb/SkaiTV-Logo.png/250px-SkaiTV-Logo.png",SKAI
-https://skai-live-gr.siliconweb.com/media/cambria4/index_media_bitrate2000K_avc1_mp4a.m3u8
+https://skai-live-gr.siliconweb.com/media/cambria4/index.m3u8
 
 #EXTINF:-1 group-title="TV" TVG-ID="OPEN" tvg-name="OPEN" tvg-logo="https://s.tvopen.gr/images/OPEN_BEYOND_Avra.png",OPEN
 https://liveopen.siliconweb.com/openTvLive/liveopen/playlist.m3u8
@@ -41,9 +41,6 @@ https://web.onair-radio.eu/groovytv/groovytv/playlist.m3u8
 
 #EXTINF:-1 group-title="TV" TVG-ID="Sierra" tvg-name="Sierra" tvg-logo="https://sierrachannel.com/wp-content/uploads/2025/07/Asset-4@2x.png",Sierra
 https://fr.crystalweb.net:1936/sierra/sierra/playlist.m3u8
-
-#EXTINF:-1 group-title="TV" TVG-ID="ExtasyTV" tvg-name="ExtasyTV" tvg-logo="",Extasy TV
-https://eu1.servers10.com:8081/8332/tracks-v1a1/mono.m3u8
 
 #EXTINF:-1 group-title="TV" tvg-name="ERT NEWS" tvg-logo="https://files2.app.ertflix.gr/files/channels/ert-news-logo-800x300.png?m=resize&w=240&h=136",ERT NEWS
 https://ertflix.ascdn.broadpeak.io/ertlive/ertnews/default/index.m3u8
