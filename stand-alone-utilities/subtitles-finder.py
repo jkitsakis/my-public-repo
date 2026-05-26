@@ -323,7 +323,6 @@ def build_video_meta(video: Path) -> VideoMeta:
         release_group=parse_release_group(video.name),
     )
 
-9
 def subtitle_exists(video: Path, lang: str) -> bool:
     candidates = [
         video.with_suffix(f".{lang}.srt"),
