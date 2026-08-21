@@ -8,14 +8,19 @@ best/
 build/
 dist/
 old/
-output/
+Music/
+installer/
+installer-output/
 
 *.log
 *.spec
 /input_txt
 /bin
 
+/Archive
+
 
 *.bat
+*.spec
 
 

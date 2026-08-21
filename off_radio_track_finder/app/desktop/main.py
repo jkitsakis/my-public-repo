@@ -2,16 +2,20 @@ from __future__ import annotations
 
 import json
 import queue
+import re
+import sys
 import threading
 import tkinter as tk
 from datetime import date, datetime
 from pathlib import Path
 from tkinter import filedialog, messagebox
 from typing import Callable
+from urllib.parse import parse_qs, urlparse
 
 import customtkinter as ctk
 from PIL import Image, ImageTk
 from tkcalendar import Calendar
+import yt_dlp
 
 from app.core import dj_library_service as djlib, dj_playlist_service as djpl
 from app.core.audio_metadata_pipeline import (
@@ -31,8 +35,76 @@ from app.core.common import (
 from app.core.offradio_track_finder import run_offcast_workflow, run_playlist_workflow
 
 ROOT = Path(__file__).resolve().parents[2]
-ASSETS_DIR = Path(__file__).resolve().parent / "assets"
+ASSETS_DIR = Path(__file__).resolve().parents[1] / "assets"
 LOGO_PATH = ASSETS_DIR / "offradio_play_logo.png"
+ICON_PATH = ASSETS_DIR / "offradio_play_logo.ico"
+
+
+def is_youtube_playlist_or_mix(url: str) -> bool:
+    """Return True when a YouTube URL identifies a playlist or radio mix."""
+    try:
+        parsed = urlparse(url.strip())
+        host = parsed.netloc.lower().split(":", 1)[0]
+        if host.startswith("www."):
+            host = host[4:]
+        if host not in {
+            "youtube.com",
+            "m.youtube.com",
+            "music.youtube.com",
+            "youtu.be",
+        }:
+            return False
+        if parsed.path.rstrip("/") == "/playlist":
+            return True
+        return bool(parse_qs(parsed.query).get("list", [""])[0].strip())
+    except (AttributeError, TypeError, ValueError):
+        return False
+
+
+def youtube_playlist_folder_name(url: str) -> tuple[str, str]:
+    """Return a Windows-safe folder name and the real YouTube playlist title."""
+    options = {
+        "quiet": True,
+        "no_warnings": True,
+        "skip_download": True,
+        "noplaylist": False,
+        "extract_flat": "in_playlist",
+        "playlistend": 1,
+        "socket_timeout": 15,
+        "retries": 2,
+        "fragment_retries": 2,
+    }
+
+    with yt_dlp.YoutubeDL(options) as downloader:
+        info = downloader.extract_info(url, download=False)
+
+    if not isinstance(info, dict):
+        raise RuntimeError("YouTube returned no playlist information.")
+
+    title = str(
+        info.get("playlist_title")
+        or info.get("title")
+        or info.get("id")
+        or ""
+    ).strip()
+    if not title:
+        raise RuntimeError("The YouTube playlist name could not be determined.")
+
+    # Keep the visible playlist name, removing only characters that Windows
+    # does not permit in folder names.
+    folder_name = re.sub(r'[<>:"/\\|?*\x00-\x1f]', " ", title)
+    folder_name = re.sub(r"\s+", " ", folder_name).strip(" .")[:120].strip(" .")
+    if not folder_name:
+        raise RuntimeError("The YouTube playlist name is not a valid folder name.")
+
+    # Windows reserves these names even when an extension is present.
+    reserved = {"CON", "PRN", "AUX", "NUL"}
+    reserved.update(f"COM{number}" for number in range(1, 10))
+    reserved.update(f"LPT{number}" for number in range(1, 10))
+    if folder_name.upper() in reserved:
+        folder_name = f"YouTube {folder_name}"
+
+    return folder_name, title
 
 
 class Palette:
@@ -238,7 +310,9 @@ class App(ctk.CTk):
         self.minsize(1080, 700)
         self.configure(fg_color=Palette.BG)
 
-        self.libvar = tk.StringVar(value=str(ROOT / "Music"))
+        # Store the library in the current user's standard Music folder,
+        # independently of the application's installation directory.
+        self.libvar = tk.StringVar(value=str(Path.home() / "Music"))
         self.status = tk.StringVar(value="Ready for your next session")
         self.status_detail = tk.StringVar(value="IDLE")
         self.pages: dict[str, ctk.CTkFrame] = {}
@@ -252,33 +326,48 @@ class App(ctk.CTk):
         self._build_shell()
         self.show("off")
 
-    def _load_brand_assets(self) -> None:
-        """Load the app logo once and keep strong Tk image references."""
-        if not LOGO_PATH.is_file():
-            return
+        # CustomTkinter applies its own Windows icon shortly after CTk starts.
+        # Reapply our ICO after that initialization has completed.
+        self.after(300, self._apply_window_icon)
 
-        try:
-            with Image.open(LOGO_PATH) as source:
-                logo = source.convert("RGBA")
-                self.brand_logo = ctk.CTkImage(
-                    light_image=logo.copy(),
-                    dark_image=logo.copy(),
-                    size=(48, 48),
-                )
-                icon = logo.copy()
-                icon.thumbnail((64, 64), Image.Resampling.LANCZOS)
-                self.window_icon = ImageTk.PhotoImage(icon)
-            self.iconphoto(True, self.window_icon)
-        except (OSError, tk.TclError):
-            # The UI remains fully usable when an OS/Tk build rejects PNG icons.
-            self.brand_logo = None
-            self.window_icon = None
+    def _load_brand_assets(self) -> None:
+        """Load the PNG used inside the UI, independently of the OS icon."""
+        if LOGO_PATH.is_file():
+            try:
+                with Image.open(LOGO_PATH) as source:
+                    logo = source.convert("RGBA")
+                    self.brand_logo = ctk.CTkImage(
+                        light_image=logo.copy(),
+                        dark_image=logo.copy(),
+                        size=(48, 48),
+                    )
+                    fallback_icon = logo.copy()
+                    fallback_icon.thumbnail((64, 64), Image.Resampling.LANCZOS)
+                    self.window_icon = ImageTk.PhotoImage(fallback_icon)
+            except OSError:
+                self.brand_logo = None
+                self.window_icon = None
+
+        self._apply_window_icon()
+
+    def _apply_window_icon(self) -> None:
+        """Apply the native ICO on Windows and retain a PNG fallback elsewhere."""
+        if sys.platform == "win32" and ICON_PATH.is_file():
+            try:
+                self.iconbitmap(default=str(ICON_PATH))
+                return
+            except tk.TclError:
+                pass
+
+        if self.window_icon is not None:
+            try:
+                self.iconphoto(True, self.window_icon)
+            except tk.TclError:
+                pass
 
     @property
     def offcast_root(self) -> Path:
-        # Use the folder selected by the user exactly as-is. Do not create an
-        # additional Offcasts child folder automatically.
-        root = self.library
+        root = self.library if self.library.name.casefold() == "offcasts" else self.library / "Offcasts"
         root.mkdir(parents=True, exist_ok=True)
         return root
 
@@ -478,14 +567,14 @@ class App(ctk.CTk):
             "Producer + Date → Offcast → Shazam → ID3 + Lyrics + ReplayGain → Playlist",
             Palette.CYAN,
         )
-        location = self.card(page, 3, "Offcast library", "All downloads and generated files use the selected folder directly")
+        location = self.card(page, 3, "Offcast library", "All downloads and generated files use the shared Offcasts folder")
         self.off_library_display = ctk.CTkEntry(location, height=44, corner_radius=10, fg_color=Palette.INPUT, border_color=Palette.BORDER, border_width=1, text_color=Palette.MUTED)
         self.off_library_display.grid(row=2, column=0, sticky="ew", padx=20, pady=(5, 8))
         self.off_library_display.insert(0, str(self.library))
         self.off_library_display.configure(state="disabled")
         self.off_root_label = ctk.CTkLabel(location, text=f"Offcast output folder: {self.offcast_root}", anchor="w", text_color=Palette.MUTED, font=ctk.CTkFont(size=11))
         self.off_root_label.grid(row=3, column=0, sticky="ew", padx=20, pady=(0, 8))
-        open_root = ctk.CTkButton(location, text="📂  Open Offcast output folder", command=lambda: open_folder_safe(self.offcast_root), height=42, fg_color=Palette.SURFACE_2, hover_color=Palette.BORDER, text_color=Palette.TEXT)
+        open_root = ctk.CTkButton(location, text="📂  Open Offcasts folder", command=lambda: open_folder_safe(self.offcast_root), height=42, fg_color=Palette.SURFACE_2, hover_color=Palette.BORDER, text_color=Palette.TEXT)
         open_root.grid(row=4, column=0, sticky="ew", padx=20, pady=(0, 18))
 
         source = self.card(page, 4, "Show details", "Choose the producer, broadcast date and download mode")
@@ -827,11 +916,52 @@ class App(ctk.CTk):
             messagebox.showwarning("Offradio Music Studio", "Enter a YouTube URL.")
             return
 
+        limit_text = self.yn.get()
+        max_tracks: int | None = None
+        if limit_text:
+            try:
+                max_tracks = int(limit_text)
+            except ValueError:
+                messagebox.showwarning(
+                    "Offradio Music Studio",
+                    "Track limit must be a whole number.",
+                )
+                return
+            if max_tracks < 1:
+                messagebox.showwarning(
+                    "Offradio Music Studio",
+                    "Track limit must be at least 1.",
+                )
+                return
+
+        manually_selected_playlist = self.yp.get()
+        detected_playlist = is_youtube_playlist_or_mix(url)
+        playlist_mode = manually_selected_playlist or detected_playlist
+        optimize = self.yo.get()
+
+        if max_tracks is not None and not playlist_mode:
+            messagebox.showwarning(
+                "Offradio Music Studio",
+                "Track limit applies to playlists and YouTube mixes. "
+                "Enable the playlist option or enter a URL containing a list ID.",
+            )
+            return
+
         def job(log):
-            output = library / "Youtube" / f"youtube_{datetime.now():%Y%m%d_%H%M%S}"
+            collection_title: str | None = None
+            if playlist_mode:
+                folder_name, collection_title = youtube_playlist_folder_name(url)
+                output = library / "Youtube" / folder_name
+                log(f"YouTube playlist: {collection_title}")
+            else:
+                output = library / "Youtube" / f"youtube_{datetime.now():%Y%m%d_%H%M%S}"
             output.mkdir(parents=True, exist_ok=True)
-            optimize = self.yo.get()
-            return process_youtube_url(url, output, playlist=self.yp.get(), max_playlist_tracks=int(self.yn.get()) if self.yn.get() else None, identify_with_shazam=True, find_missing_lyrics=True, embed_cover=True, write_replaygain=True, apply_speaker_safe_audio=optimize, speaker_safe_settings=SpeakerSafeSettings() if optimize else None, rename_file=True, log=log)
+            if detected_playlist and not manually_selected_playlist:
+                log("Playlist/mix detected automatically from the YouTube URL.")
+            if playlist_mode:
+                limit_description = str(max_tracks) if max_tracks is not None else "all"
+                log(f"Playlist mode enabled; track limit: {limit_description}.")
+            return process_youtube_url(url, output, collection_title=collection_title, playlist=playlist_mode, max_playlist_tracks=max_tracks, identify_with_shazam=True, find_missing_lyrics=True, embed_cover=True, write_replaygain=True, apply_speaker_safe_audio=optimize, speaker_safe_settings=SpeakerSafeSettings() if optimize else None, rename_file=True, log=log)
 
         self.start("Downloading from YouTube", job)
 
@@ -847,6 +977,17 @@ class App(ctk.CTk):
 
 
 def main() -> None:
+    if sys.platform == "win32":
+        # Give Windows a stable application identity so the taskbar uses the
+        # executable/icon instead of grouping the window under python.exe.
+        try:
+            import ctypes
+
+            ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(
+                "Offradio.MusicStudio.1"
+            )
+        except (AttributeError, OSError):
+            pass
     App().mainloop()
 
 
